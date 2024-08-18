@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Col, Row, Input } from 'antd';
+import InputComponent from './InputComponent';
 
 const { Meta } = Card;
 
@@ -26,7 +27,7 @@ const CardCompnent = () => (
                 >
                     <Meta title="Card title" description="This is the description" />
                     <div style={{ marginTop: 16 }}>
-                        <Input placeholder="Enter some text" />
+                        <InputComponent placeholder="Enter some text" readOnly={true} />
                     </div>
                 </Card>
             </Col>
