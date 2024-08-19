@@ -3,13 +3,12 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
-const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.images && data.images.length > 0 ? data.images[0] : defaultImage;
     const inputRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
         focusInput: () => {
-            console.log('뭐지?');
             if (inputRef.current) {
                 inputRef.current.focus();
             }
@@ -17,7 +16,6 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
     }));
 
     useEffect(() => {
-        console.log('확인');
         console.log(isFocused);
         if (isFocused && inputRef.current) {
             inputRef.current.focus();
@@ -72,4 +70,4 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
     );
 });
 
-export default ProductKeywordCard;
+export default SearchKeywordCard;

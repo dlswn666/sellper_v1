@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Space, Row, Col } from 'antd';
-import ProductKeywordCard from '../components/products/ProductKeywordCard';
+import { Space, Row, Col, Ste } from 'antd';
+import SearchKeywordCard from '../components/products/SearchKeywordCard';
 import testData from '../assets/testData/test';
 
 const Products = () => {
@@ -52,7 +52,7 @@ const Products = () => {
                         tabIndex={0}
                     >
                         {modifiedTestData.map((item, index) => (
-                            <ProductKeywordCard
+                            <SearchKeywordCard
                                 key={index}
                                 data={item}
                                 isFocused={index === focusedIndex}
