@@ -1,0 +1,17 @@
+.data-title {
+    height: 30px;
+    margin: auto 0;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.data-content {
+    height: 30px;
+    margin: auto 0;
+    font-size: small;
+}
+
+.divider {
+    margin: 5px 0;
+    border-width: 2px;
+}

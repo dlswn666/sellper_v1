@@ -3,7 +3,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
-const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.images && data.images.length > 0 ? data.images[0] : defaultImage;
     const inputRef = useRef(null);
 
@@ -47,7 +47,7 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
                                     </Row>
                                     <Row gutter={[4, 1]}>
                                         <Col span={4}>
-                                            <p style={{ fontSize: 16, fontWeight: 'bold' }}>판매 사이트 :</p>
+                                            <p style={{ fontSize: 16, fontWeight: 'bold' }}>판매 사이트 Tag :</p>
                                         </Col>
                                         <Col span={4}>
                                             <p style={{ fontSize: 14 }}>{data.siteName}</p>
@@ -87,4 +87,4 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
     );
 });
 
-export default ProductKeywordCard;
+export default ProductTagCard;

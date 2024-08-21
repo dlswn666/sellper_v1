@@ -6,6 +6,7 @@ import ProductNameCard from '../components/products/ProductNameCard';
 import testData from '../assets/testData/test';
 import productNameTestData from '../assets/testData/productNameTestData';
 import ProductKeywordCard from '../components/products/ProductKeywordCard';
+import ProductTagCard from '../components/products/ProductTagCard';
 
 const Products = () => {
     const initImageGroup = [
@@ -34,6 +35,9 @@ const Products = () => {
 
     const [productKeywordFocusedIndex, setProductKeywordFocusedIndex] = useState(0);
     const productKeywordCardRefs = useRef([]);
+
+    const [productTagFocusedIndex, setProductTagFocusedIndex] = useState(0);
+    const productTagCardRefs = useRef([]);
 
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -85,12 +89,32 @@ const Products = () => {
         }
     };
 
+    const handleProductTagKeyDown = (e) => {
+        if (e.key === 'ArrowDown') {
+            setProductTagFocusedIndex((prevIndex) => {
+                const newIndex = Math.min(prevIndex + 1, modifiedProductTestData.length - 1);
+                productTagCardRefs.current[newIndex]?.focusInput();
+                return newIndex;
+            });
+        } else if (e.key === 'ArrowUp') {
+            setProductTagFocusedIndex((prevIndex) => {
+                const newIndex = Math.max(prevIndex - 1, 0);
+                productTagCardRefs.current[newIndex]?.focusInput();
+                return newIndex;
+            });
+        }
+    };
+
     useEffect(() => {
         // 각 스텝에 처음 진입할 때 첫 번째 카드에 포커스
         if (currentStep === 0) {
             searchKeywordCardRefs.current[0]?.focusInput();
         } else if (currentStep === 1) {
             productNameCardRefs.current[0]?.focusInput();
+        } else if (currentStep === 3) {
+            productKeywordCardRefs.current[0]?.focusInput();
+        } else if (currentStep === 4) {
+            productTagCardRefs.current[0]?.focusInput();
         }
     }, [currentStep]);
 
@@ -110,7 +134,7 @@ const Products = () => {
     const steps = [
         {
             title: '검색어 등록',
-            description: '검색어를 입력하세요',
+            description: <span style={{ fontSize: '10px' }}>검색어를 입력하세요</span>,
             content: (
                 <Row>
                     <Col span={24}>
@@ -137,7 +161,7 @@ const Products = () => {
         },
         {
             title: '상품명 등록',
-            description: '상품명을 입력하세요',
+            description: <span style={{ fontSize: '10px' }}>상품명을 입력하세요</span>,
             content: (
                 <Row>
                     <Col span={24}>
@@ -164,7 +188,11 @@ const Products = () => {
         },
         {
             title: '키워드 등록',
-            description: '상품 키워드을 입력하세요',
+            description: (
+                <span style={{ fontSize: '10px' }}>
+                    상품 키워드를 <br /> 입력하세요
+                </span>
+            ),
             content: (
                 <Row>
                     <Col span={24}>
@@ -191,8 +219,30 @@ const Products = () => {
         },
         {
             title: '태그 등록',
-            description: '상품명 등록',
-            content: <div>상품 선택 컴포넌트 내용</div>,
+            description: <span style={{ fontSize: '10px' }}>상품 태그를 입력하세요</span>,
+            content: (
+                <Row>
+                    <Col span={24}>
+                        <Space
+                            direction="vertical"
+                            size={'middle'}
+                            style={{ display: 'flex' }}
+                            onKeyDown={handleProductKeywordKeyDown}
+                            tabIndex={0}
+                        >
+                            {modifiedProductTestData.map((item, index) => (
+                                <ProductTagCard
+                                    key={index}
+                                    data={item}
+                                    isFocused={index === productTagFocusedIndex}
+                                    ref={(el) => (productTagCardRefs.current[index] = el)}
+                                    onCardFocus={() => setProductTagFocusedIndex(index)}
+                                />
+                            ))}
+                        </Space>
+                    </Col>
+                </Row>
+            ),
         },
         {
             title: '카테고리 등록',
