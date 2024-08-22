@@ -26,7 +26,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
             <Row>
-                <Col span={12}>
+                <Col span={24}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
                         <Image.PreviewGroup
                             items={data.images && data.images.length > 0 ? data.images : [defaultImage]}
@@ -86,7 +86,6 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                         </div>
                     </Card>
                 </Col>
-                <Col span={12}></Col>
             </Row>
         </Space>
     );

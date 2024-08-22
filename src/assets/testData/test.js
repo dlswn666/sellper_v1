@@ -4,12 +4,14 @@ const testData = [
         siteName: '사이트 A',
         productNumber: '001',
         price: '₩10,000',
+        siteUrl: 'https://www.zentrade.co.kr/shop/goods/goods_view.php?goodsno=4736&category=001',
     },
     {
         productTitle: '상품 2',
         siteName: '사이트 B',
         productNumber: '002',
         price: '₩20,000',
+        siteUrl: 'https://www.zentrade.co.kr/shop/goods/goods_view.php?goodsno=4700&category=001',
     },
     {
         productTitle: '상품 3',

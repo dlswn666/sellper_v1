@@ -30,7 +30,7 @@ function App() {
                     </div>
                     <MenuComponent />
                 </Header>
-                <Content style={{ padding: '0 48px', height: '1800px' }}>
+                <Content style={{ padding: '0 48px', height: 'auto', minHeight: '1800px' }}>
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/contact" element={<Contact />} />

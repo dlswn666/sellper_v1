@@ -28,6 +28,7 @@ const Products = () => {
 
     // 각 컴포넌트별 포커스 상태와 참조 관리
     const [searchKeywordFocusedIndex, setSearchKeywordFocusedIndex] = useState(0);
+    const [searchKeywordUrl, setSearchKeywordUrl] = useState(0);
     const searchKeywordCardRefs = useRef([]);
 
     const [productNameFocusedIndex, setProductNameFocusedIndex] = useState(0);
@@ -118,6 +119,11 @@ const Products = () => {
         }
     }, [currentStep]);
 
+    const onFocusSearchKeywordCard = (index) => {
+        setSearchKeywordFocusedIndex(index);
+        setSearchKeywordUrl(modifiedTestData[index].siteUrl);
+    };
+
     // 각 스텝의 활성화 상태를 관리할 수 있는 상태 변수 (예시로 두 번째 스텝을 비활성화)
     const [stepDisabledStatus, setStepDisabledStatus] = useState([
         false,
@@ -137,7 +143,7 @@ const Products = () => {
             description: <span style={{ fontSize: '10px' }}>검색어를 입력하세요</span>,
             content: (
                 <Row>
-                    <Col span={24}>
+                    <Col span={12}>
                         <Space
                             direction="vertical"
                             size={'middle'}
@@ -151,10 +157,27 @@ const Products = () => {
                                     data={item}
                                     isFocused={index === searchKeywordFocusedIndex}
                                     ref={(el) => (searchKeywordCardRefs.current[index] = el)}
-                                    onCardFocus={() => setSearchKeywordFocusedIndex(index)}
+                                    onCardFocus={() => onFocusSearchKeywordCard(index)}
                                 />
                             ))}
                         </Space>
+                    </Col>
+                    <Col span={12}>
+                        {searchKeywordUrl && (
+                            <iframe
+                                src={searchKeywordUrl}
+                                title="Embedded Webpage"
+                                width="100%"
+                                height="1200px"
+                                style={{
+                                    transform: `scale(0.8)`,
+                                    transformOrigin: '0 0', // Top-left corner as the origin
+                                    width: `${100 / 0.8}%`,
+                                    height: '1200px',
+                                    border: 'none',
+                                }}
+                            />
+                        )}
                     </Col>
                 </Row>
             ),
@@ -227,7 +250,7 @@ const Products = () => {
                             direction="vertical"
                             size={'middle'}
                             style={{ display: 'flex' }}
-                            onKeyDown={handleProductKeywordKeyDown}
+                            onKeyDown={handleProductTagKeyDown}
                             tabIndex={0}
                         >
                             {modifiedProductTestData.map((item, index) => (
