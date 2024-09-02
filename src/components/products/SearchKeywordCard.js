@@ -3,6 +3,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
+import { putSearchWord } from '../../apis/productsApi';
 
 const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
@@ -23,15 +24,16 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
         }
     }, [isFocused]);
 
-    // 포커스 아웃 또는 Enter 키 입력 시 실행될 함수
-    const handleInputAction = async (e) => {
-        console.log('확인');
+    const onKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            console.log(e.target.value);
+            const param = {
+                workingProductId: data.workingProductId,
+                searchWord: e.target.value,
+            };
+            const result = putSearchWord(param);
+        }
     };
-
-    // const getSearchWordData = async (data) => {
-    //     const swData = await searchWordData(data);
-    //     return swData;
-    // };
 
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
@@ -94,7 +96,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                         <div style={{ marginTop: 16 }}>
                             <InputComponent
                                 ref={inputRef}
-                                onBlur={handleInputAction}
+                                onKeyDown={onKeyDown}
                                 placeholder="상품 검색어를 입력해주세요"
                             />
                         </div>

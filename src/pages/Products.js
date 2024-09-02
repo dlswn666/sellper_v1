@@ -4,9 +4,7 @@ import ProductNameCard from '../components/products/ProductNameCard';
 import productNameTestData from '../assets/testData/productNameTestData';
 import ProductKeywordCard from '../components/products/ProductKeywordCard';
 import ProductTagCard from '../components/products/ProductTagCard';
-import { wholeSaleProductData } from '../apis/productsApi';
 import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps';
-import SelectWSProductCard from '../components/products/SelectWSProductCard';
 import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps';
 
 const Products = () => {
@@ -20,24 +18,6 @@ const Products = () => {
         ...item,
         images: initImageGroup,
     }));
-
-    const [data, setdata] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        getWholeSaleProductData();
-    }, []);
-
-    const getWholeSaleProductData = async () => {
-        try {
-            setLoading(true);
-            const wspData = await wholeSaleProductData();
-            setdata(wspData);
-            setLoading(false);
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     // 각 컴포넌트별 포커스 상태와 참조 관리
     const [searchKeywordFocusedIndex, setSearchKeywordFocusedIndex] = useState(0);
@@ -141,9 +121,6 @@ const Products = () => {
             ),
             content: (
                 <SelectWSProductCardSteps
-                    data={data}
-                    loading={loading}
-                    setLoading={setLoading}
                     searchKeywordUrl={searchKeywordUrl}
                     setSearchKeywordUrl={setSearchKeywordUrl}
                     searchKeywordFocusedIndex={searchKeywordFocusedIndex}
@@ -156,9 +133,6 @@ const Products = () => {
             description: <span style={{ fontSize: '10px' }}>검색어를 입력하세요</span>,
             content: (
                 <SearchKeywordCardStep
-                    data={data}
-                    loading={loading}
-                    setLoading={setLoading}
                     searchKeywordUrl={searchKeywordUrl}
                     setSearchKeywordUrl={setSearchKeywordUrl}
                     searchKeywordFocusedIndex={searchKeywordFocusedIndex}

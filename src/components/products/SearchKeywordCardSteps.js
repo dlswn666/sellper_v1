@@ -93,8 +93,8 @@ const SearchKeywordCardStep = ({
                     />
                 </Col>
             </Row>
-            <Row>
-                <Col span={12}>
+            <Row gutter={16}>
+                <Col span={12} className="gutter-row">
                     <Space
                         direction="vertical"
                         size={'middle'}
@@ -117,7 +117,7 @@ const SearchKeywordCardStep = ({
                         )}
                     </Space>
                 </Col>
-                <Col span={12}>
+                <Col span={12} className="getter-row">
                     {searchKeywordUrl && (
                         <iframe
                             src={searchKeywordUrl}
@@ -127,9 +127,9 @@ const SearchKeywordCardStep = ({
                             style={{
                                 position: 'sticky',
                                 top: '0px',
-                                transform: `scale(0.8)`,
+                                transform: `scale(0.6)`,
                                 transformOrigin: '0 0',
-                                width: `${100 / 0.8}%`,
+                                width: `${100 / 0.6}%`,
                                 height: '1600px',
                                 border: 'none',
                             }}
