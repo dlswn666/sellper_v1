@@ -50,7 +50,7 @@ export const selectWorkingSearchWord = async (data, page = 1, limit = 50) => {
 
 // 검색어 업데이트
 export const putSearchWord = async (data) => {
-    // update문 작성 BND
+    // update문 작성 BND 확인
     console.log(data);
     return data;
 };
