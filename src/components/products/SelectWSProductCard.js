@@ -1,11 +1,8 @@
-import { Card, Image, Space, Row, Col, Divider } from 'antd';
+import { Card, Space, Row, Col, Divider } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import InputComponent from '../InputComponent';
-import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
 
-const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
-    const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
+const SelectWSProductCard = forwardRef(({ data, isFocused, onCardFocus, onClick, isSelected }, ref) => {
     const inputRef = useRef(null);
     // const [inputInitSw, setInputInitSw] = useState(null);
 
@@ -24,25 +21,29 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
     }, [isFocused]);
 
     // 포커스 아웃 또는 Enter 키 입력 시 실행될 함수
-    const handleInputAction = async (e) => {
-        console.log('확인');
-    };
+    // const handleInputAction = async (e) => {
+    //     console.log('확인');
+    // };
 
     // const getSearchWordData = async (data) => {
     //     const swData = await searchWordData(data);
     //     return swData;
     // };
 
+    // 선택된 카드에 스타일을 동적으로 적용
+    const cardStyle = {
+        width: '100%',
+        border: isSelected ? '2px solid #1890ff' : 'none', // 선택된 경우 파란색 border
+        boxShadow: isSelected ? '0 4px 8px rgba(0, 0, 255, 0.2)' : 'none', // 선택된 경우 약간의 그림자 효과
+    };
+
     return (
-        <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
-            <Row>
-                <Col span={24}>
-                    <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
-                        <Image.PreviewGroup
-                            items={data.images && data.images.length > 0 ? data.images : [defaultImage]}
-                        >
+        <>
+            <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
+                <Row>
+                    <Col span={24}>
+                        <Card hoverable style={cardStyle} onFocus={onCardFocus} tabIndex={0} onClick={onClick}>
                             <div style={{ display: 'flex', flex: 1 }}>
-                                <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
                                 <div style={{ marginLeft: 16, flex: 1 }}>
                                     <Row className="table-row" gutter={[4, 1]}>
                                         <Col span={5}>
@@ -84,25 +85,27 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                         <Col span={1}>
                                             <p className="data-title">:</p>
                                         </Col>
-                                        <Col span={4}>
-                                            <p className="data-content">{data.productPrice} </p>
+                                        <Col span={6}>
+                                            <p className="data-content">{data.productPrice}</p>
+                                        </Col>
+                                        <Col span={5}>
+                                            <p className="data-title">작업 상품 수</p>
+                                        </Col>
+                                        <Col span={1}>
+                                            <p className="data-title">:</p>
+                                        </Col>
+                                        <Col span={6}>
+                                            <p className="data-content">{data.workingCnt} </p>
                                         </Col>
                                     </Row>
                                 </div>
                             </div>
-                        </Image.PreviewGroup>
-                        <div style={{ marginTop: 16 }}>
-                            <InputComponent
-                                ref={inputRef}
-                                onBlur={handleInputAction}
-                                placeholder="상품 검색어를 입력해주세요"
-                            />
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
-        </Space>
+                        </Card>
+                    </Col>
+                </Row>
+            </Space>
+        </>
     );
 });
 
-export default SearchKeywordCard;
+export default SelectWSProductCard;

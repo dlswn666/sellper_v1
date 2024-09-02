@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Space, Row, Col, Steps } from 'antd';
-import SearchKeywordCard from '../components/products/SearchKeywordCard';
 import ProductNameCard from '../components/products/ProductNameCard';
-//검색어 등록 데이터
-import testData from '../assets/testData/test';
 import productNameTestData from '../assets/testData/productNameTestData';
 import ProductKeywordCard from '../components/products/ProductKeywordCard';
 import ProductTagCard from '../components/products/ProductTagCard';
+import { wholeSaleProductData } from '../apis/productsApi';
+import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps';
+import SelectWSProductCard from '../components/products/SelectWSProductCard';
+import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps';
 
 const Products = () => {
     const initImageGroup = [
@@ -15,16 +16,28 @@ const Products = () => {
         'https://gw.alipayobjects.com/zos/antfincdn/x43I27A55%26/photo-1438109491414-7198515b166b.webp',
     ];
 
-    // 검색어 등록 데이터
-    const modifiedTestData = testData.map((item) => ({
-        ...item,
-        images: initImageGroup,
-    }));
-
     const modifiedProductTestData = productNameTestData.map((item) => ({
         ...item,
         images: initImageGroup,
     }));
+
+    const [data, setdata] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        getWholeSaleProductData();
+    }, []);
+
+    const getWholeSaleProductData = async () => {
+        try {
+            setLoading(true);
+            const wspData = await wholeSaleProductData();
+            setdata(wspData);
+            setLoading(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     // 각 컴포넌트별 포커스 상태와 참조 관리
     const [searchKeywordFocusedIndex, setSearchKeywordFocusedIndex] = useState(0);
@@ -42,21 +55,18 @@ const Products = () => {
 
     const [currentStep, setCurrentStep] = useState(0);
 
-    const handleSearchKeywordKeyDown = (e) => {
-        if (e.key === 'ArrowDown') {
-            setSearchKeywordFocusedIndex((prevIndex) => {
-                const newIndex = Math.min(prevIndex + 1, modifiedTestData.length - 1);
-                searchKeywordCardRefs.current[newIndex]?.focusInput();
-                return newIndex;
-            });
-        } else if (e.key === 'ArrowUp') {
-            setSearchKeywordFocusedIndex((prevIndex) => {
-                const newIndex = Math.max(prevIndex - 1, 0);
-                searchKeywordCardRefs.current[newIndex]?.focusInput();
-                return newIndex;
-            });
-        }
-    };
+    // 각 스텝의 활성화 상태를 관리할 수 있는 상태 변수 (예시로 두 번째 스텝을 비활성화)
+    const [stepDisabledStatus, setStepDisabledStatus] = useState([
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+    ]);
 
     const handleProductNameKeyDown = (e) => {
         if (e.key === 'ArrowDown') {
@@ -119,67 +129,41 @@ const Products = () => {
         }
     }, [currentStep]);
 
-    const onFocusSearchKeywordCard = (index) => {
-        setSearchKeywordFocusedIndex(index);
-        setSearchKeywordUrl(modifiedTestData[index].siteUrl);
-    };
-
-    // 각 스텝의 활성화 상태를 관리할 수 있는 상태 변수 (예시로 두 번째 스텝을 비활성화)
-    const [stepDisabledStatus, setStepDisabledStatus] = useState([
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-    ]);
-
     const steps = [
+        {
+            title: '작업 상품 선택',
+            description: (
+                <span style={{ fontSize: '10px' }}>
+                    가공할 상품을
+                    <br />
+                    선택해주세요
+                </span>
+            ),
+            content: (
+                <SelectWSProductCardSteps
+                    data={data}
+                    loading={loading}
+                    setLoading={setLoading}
+                    searchKeywordUrl={searchKeywordUrl}
+                    setSearchKeywordUrl={setSearchKeywordUrl}
+                    searchKeywordFocusedIndex={searchKeywordFocusedIndex}
+                    setSearchKeywordFocusedIndex={setSearchKeywordFocusedIndex}
+                />
+            ),
+        },
         {
             title: '검색어 등록',
             description: <span style={{ fontSize: '10px' }}>검색어를 입력하세요</span>,
             content: (
-                <Row>
-                    <Col span={12}>
-                        <Space
-                            direction="vertical"
-                            size={'middle'}
-                            style={{ display: 'flex' }}
-                            onKeyDown={handleSearchKeywordKeyDown}
-                            tabIndex={0}
-                        >
-                            {modifiedTestData.map((item, index) => (
-                                <SearchKeywordCard
-                                    key={index}
-                                    data={item}
-                                    isFocused={index === searchKeywordFocusedIndex}
-                                    ref={(el) => (searchKeywordCardRefs.current[index] = el)}
-                                    onCardFocus={() => onFocusSearchKeywordCard(index)}
-                                />
-                            ))}
-                        </Space>
-                    </Col>
-                    <Col span={12}>
-                        {searchKeywordUrl && (
-                            <iframe
-                                src={searchKeywordUrl}
-                                title="Embedded Webpage"
-                                width="100%"
-                                height="1200px"
-                                style={{
-                                    transform: `scale(0.8)`,
-                                    transformOrigin: '0 0', // Top-left corner as the origin
-                                    width: `${100 / 0.8}%`,
-                                    height: '1200px',
-                                    border: 'none',
-                                }}
-                            />
-                        )}
-                    </Col>
-                </Row>
+                <SearchKeywordCardStep
+                    data={data}
+                    loading={loading}
+                    setLoading={setLoading}
+                    searchKeywordUrl={searchKeywordUrl}
+                    setSearchKeywordUrl={setSearchKeywordUrl}
+                    searchKeywordFocusedIndex={searchKeywordFocusedIndex}
+                    setSearchKeywordFocusedIndex={setSearchKeywordFocusedIndex}
+                />
             ),
         },
         {
