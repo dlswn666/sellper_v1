@@ -6,12 +6,10 @@ const apiProducts = axios.create({
 });
 
 // 작업 상품 선택 데이터 조회
-export const selectProductData = async (data) => {
-    let reqUrl;
+export const selectProductData = async (data, page = 1, limit = 50) => {
+    let reqUrl = `/api/selectProducts?page=${page}&limit=${limit}`;
     if (data) {
-        reqUrl = `/api/selectProducts/${data}`;
-    } else {
-        reqUrl = '/api/selectProducts';
+        reqUrl += `&search=${data}`;
     }
     try {
         const response = await apiProducts.get(reqUrl);

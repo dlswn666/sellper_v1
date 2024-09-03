@@ -8,7 +8,7 @@ const useInfiniteScroll = (hasMore, externalLoading) => {
     const handleScroll = useCallback(
         throttle(() => {
             const scrollPosition = window.innerHeight + document.documentElement.scrollTop;
-            const threshold = document.documentElement.scrollHeight - 100;
+            const threshold = document.documentElement.scrollHeight * 0.5;
 
             if (scrollPosition >= threshold && !loading && hasMore) {
                 setPage((prevPage) => prevPage + 1);

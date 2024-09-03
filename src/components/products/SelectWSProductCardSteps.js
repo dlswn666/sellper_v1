@@ -4,19 +4,19 @@ import Search from 'antd/es/input/Search';
 import SelectWSProductCard from './SelectWSProductCard';
 import { putWorkingData, selectProductData } from '../../apis/productsApi';
 import { CheckOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 
 const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedIndex, setSearchKeywordFocusedIndex }) => {
-    useEffect(() => {
-        onSearch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const searchKeywordCardRefs = useRef([]);
-    const [searchData, setSearchData] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [searchData, setSearchData] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
     const [selectLoading, setSelectLoading] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [selectedWSProduct, setSelectedWSProduct] = useState([]); // 선택된 제품 상태
+
+    const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
 
     const columns = [
         {
@@ -32,6 +32,17 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
             dataIndex: 'productPrice',
         },
     ];
+
+    useEffect(() => {
+        onSearch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (page > 1 && !searchLoading) {
+            onSearch(searchTerm, true);
+        }
+    }, [page]);
 
     const handleSearchKeywordKeyDown = (e) => {
         if (e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -54,18 +65,34 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
         setSearchKeywordUrl(searchData[index].detailPageUrl);
     };
 
-    const onSearch = async (value) => {
-        setLoading(true);
+    const onSearch = async (value = searchTerm, isLoadMore = false) => {
+        if (searchLoading) return;
+
+        let limit = 100;
+
+        setSearchLoading(true);
         try {
-            const wspData = await selectProductData(value); // 검색어를 API에 전달
-            setSearchData(wspData);
-            setSearchKeywordUrl(wspData[0]?.detailPageUrl || '');
-            setTimeout(() => {
-                setLoading(false);
-            }, 500); // 500ms (0.5초) 지연 설정
+            const response = await selectProductData(value, isLoadMore ? page : 1, limit);
+            const { result: wspData, total: totalCount } = response;
+            console.log(response);
+            if (!isLoadMore) {
+                setSearchData(wspData);
+                setSearchKeywordFocusedIndex(0);
+            } else {
+                setSearchData((prevData) => [...prevData, ...wspData]);
+            }
+
+            if (wspData && searchData) {
+                if (wspData.length < limit || searchData.length + wspData.length >= totalCount) {
+                    setHasMore(false);
+                }
+            }
         } catch (error) {
             console.error(error);
+            setHasMore(false);
+        } finally {
             setLoading(false);
+            setSearchLoading(false);
         }
     };
 
@@ -104,6 +131,14 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
         console.log(selectedWSProduct);
     };
 
+    const handleSearch = (value) => {
+        setSearchTerm(value);
+        setHasMore(true);
+        setSearchData([]);
+        setPage(1);
+        onSearch(value);
+    };
+
     return (
         <>
             <Row>
@@ -112,8 +147,8 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
                         placeholder="상품 검색어를 입력해 주세요"
                         enterButton="Search"
                         size="large"
-                        loading={loading}
-                        onSearch={onSearch}
+                        loading={searchLoading}
+                        onSearch={handleSearch}
                     />
                 </Col>
             </Row>

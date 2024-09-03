@@ -1,6 +1,5 @@
-import { Card, Image, Space, Row, Col, Divider } from 'antd';
+import { Card, Image, Space, Row, Col, Divider, Input } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
 import { putSearchWord } from '../../apis/productsApi';
@@ -38,7 +37,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                 preValue,
             };
 
-            if (curValue !== preValue) {
+            if (curValue.trim() !== preValue.trim()) {
                 const result = await putSearchWord(param); // 비동기 함수이므로 await 사용
                 if (result) {
                     // 검색어를 성공적으로 변경한 후 localData 업데이트
@@ -51,6 +50,14 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
             }
         }
     };
+
+    // 추가된 onChange 핸들러
+    // const handleInputChange = (e) => {
+    //     setLocalData((prevData) => ({
+    //         ...prevData,
+    //         searchWord: e.target.value,
+    //     }));
+    // };
 
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
@@ -111,11 +118,11 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                             </div>
                         </Image.PreviewGroup>
                         <div style={{ marginTop: 16 }}>
-                            <InputComponent
+                            <Input
                                 ref={inputRef}
                                 onKeyDown={onKeyDown}
                                 placeholder="상품 검색어를 입력해주세요"
-                                value={localData.searchWord}
+                                defaultValue={localData.searchWord}
                             />
                         </div>
                     </Card>

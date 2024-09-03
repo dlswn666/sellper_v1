@@ -20,7 +20,6 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
     }, []);
 
     useEffect(() => {
-        console.log('searchLoading', searchLoading);
         if (page > 1 && !searchLoading) {
             onSearch(searchTerm, true);
         }
@@ -32,10 +31,9 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
         setSearchLoading(true);
 
         try {
-            console.log('page 확인', page);
             const response = await selectWorkingSearchWord(value, isLoadMore ? page : 1);
             const { result: wspData, total: totalCount } = response;
-            console.log(response);
+
             if (!isLoadMore) {
                 setSearchData(wspData);
                 setSearchKeywordFocusedIndex(0);

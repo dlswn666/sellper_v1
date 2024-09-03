@@ -20,16 +20,6 @@ const SelectWSProductCard = forwardRef(({ data, isFocused, onCardFocus, onClick,
         }
     }, [isFocused]);
 
-    // 포커스 아웃 또는 Enter 키 입력 시 실행될 함수
-    // const handleInputAction = async (e) => {
-    //     console.log('확인');
-    // };
-
-    // const getSearchWordData = async (data) => {
-    //     const swData = await searchWordData(data);
-    //     return swData;
-    // };
-
     // 선택된 카드에 스타일을 동적으로 적용
     const cardStyle = {
         width: '100%',
