@@ -1,5 +1,5 @@
 import { Card, Image, Space, Row, Col, Divider } from 'antd';
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
@@ -8,6 +8,7 @@ import { putSearchWord } from '../../apis/productsApi';
 const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
+    const [localData, setLocalData] = useState(structuredClone(data));
     // const [inputInitSw, setInputInitSw] = useState(null);
 
     useImperativeHandle(ref, () => ({
@@ -24,14 +25,30 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
         }
     }, [isFocused]);
 
-    const onKeyDown = (e) => {
+    const onKeyDown = async (e) => {
         if (e.key === 'Enter') {
             console.log(e.target.value);
+            const curValue = e.target.value;
+            const preValue = localData.searchWord ? localData.searchWord : '';
+            const id = localData.workingProductId;
+
             const param = {
-                workingProductId: data.workingProductId,
-                searchWord: e.target.value,
+                id,
+                curValue,
+                preValue,
             };
-            const result = putSearchWord(param);
+
+            if (curValue !== preValue) {
+                const result = await putSearchWord(param); // 비동기 함수이므로 await 사용
+                if (result) {
+                    // 검색어를 성공적으로 변경한 후 localData 업데이트
+                    setLocalData((prevData) => ({
+                        ...prevData,
+                        searchWord: curValue, // searchWord 값 업데이트
+                    }));
+                    console.log('param 확인', param);
+                }
+            }
         }
     };
 
@@ -41,7 +58,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                 <Col span={24}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
                         <Image.PreviewGroup
-                            items={data.images && data.images.length > 0 ? data.images : [defaultImage]}
+                            items={localData.images && localData.images.length > 0 ? localData.images : [defaultImage]}
                         >
                             <div style={{ display: 'flex', flex: 1 }}>
                                 <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
@@ -54,7 +71,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={18}>
-                                            <p className="data-content">{data.productName}</p>
+                                            <p className="data-content">{localData.productName}</p>
                                         </Col>
                                     </Row>
                                     <Divider className="divider" />
@@ -66,7 +83,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={6}>
-                                            <p className="data-content">{data.siteName}</p>
+                                            <p className="data-content">{localData.siteName}</p>
                                         </Col>
                                         <Col span={5}>
                                             <p className="data-title">상품 번호</p>
@@ -75,7 +92,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={6}>
-                                            <p className="data-content">{data.productCode}</p>
+                                            <p className="data-content">{localData.productCode}</p>
                                         </Col>
                                     </Row>
                                     <Divider className="divider" />
@@ -87,7 +104,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={4}>
-                                            <p className="data-content">{data.productPrice} </p>
+                                            <p className="data-content">{localData.productPrice} </p>
                                         </Col>
                                     </Row>
                                 </div>
@@ -98,6 +115,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                 ref={inputRef}
                                 onKeyDown={onKeyDown}
                                 placeholder="상품 검색어를 입력해주세요"
+                                value={localData.searchWord}
                             />
                         </div>
                     </Card>

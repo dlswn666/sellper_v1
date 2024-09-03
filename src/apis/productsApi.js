@@ -39,8 +39,6 @@ export const selectWorkingSearchWord = async (data, page = 1, limit = 50) => {
         reqUrl += `&search=${data}`;
     }
 
-    console.log(reqUrl);
-
     try {
         const response = await apiProducts.get(reqUrl);
         return response.data; // 응답 데이터를 반환하여 호출한 곳에서 사용할 수 있게 함
@@ -52,7 +50,13 @@ export const selectWorkingSearchWord = async (data, page = 1, limit = 50) => {
 
 // 검색어 업데이트
 export const putSearchWord = async (data) => {
-    // update문 작성 BND 확인
-    console.log(data);
-    return data;
+    let reqUrl = `/api/postSearchWord`;
+
+    try {
+        const response = await apiProducts.post(reqUrl, data);
+        return response.data; // 응답 데이터를 반환하여 호출한 곳에서 사용할 수 있게 함
+    } catch (error) {
+        console.error('Error fetching wholesale product data:', error);
+        throw error; // 에러를 다시 던져서 호출한 곳에서 에러 처리할 수 있게 함
+    }
 };
