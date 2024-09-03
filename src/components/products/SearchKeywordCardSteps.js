@@ -87,7 +87,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
     return (
         <>
             <Row>
-                <Col span={24} style={{ height: '100px' }}>
+                <Col span={24}>
                     <Search
                         placeholder="상품 검색어를 입력해 주세요"
                         enterButton="Search"
@@ -95,6 +95,14 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
                         loading={searchLoading}
                         onSearch={handleSearch}
                     />
+                </Col>
+            </Row>
+            <Row gutter={16} style={{ marginBottom: '10px' }}>
+                <Col span={12} className="getter-row">
+                    <p style={{ fontSize: '20px', textAlign: 'right' }}>
+                        {' '}
+                        상품수: {searchData && searchData.length ? searchData.length : 0}
+                    </p>
                 </Col>
             </Row>
             <Row gutter={16}>
