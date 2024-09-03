@@ -5,12 +5,7 @@ import SelectWSProductCard from './SelectWSProductCard';
 import { putWorkingData, selectProductData } from '../../apis/productsApi';
 import { CheckOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
 
-const SelectWSProductCardSteps = ({
-    searchKeywordUrl,
-    setSearchKeywordUrl,
-    searchKeywordFocusedIndex,
-    setSearchKeywordFocusedIndex,
-}) => {
+const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedIndex, setSearchKeywordFocusedIndex }) => {
     useEffect(() => {
         onSearch();
         // eslint-disable-next-line react-hooks/exhaustive-deps

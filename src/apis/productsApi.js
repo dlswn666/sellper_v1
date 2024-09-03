@@ -39,6 +39,8 @@ export const selectWorkingSearchWord = async (data, page = 1, limit = 50) => {
         reqUrl += `&search=${data}`;
     }
 
+    console.log(reqUrl);
+
     try {
         const response = await apiProducts.get(reqUrl);
         return response.data; // 응답 데이터를 반환하여 호출한 곳에서 사용할 수 있게 함

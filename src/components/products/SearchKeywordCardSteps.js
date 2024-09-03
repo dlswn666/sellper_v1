@@ -1,42 +1,69 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Row, Col, Space, Empty } from 'antd';
 import Search from 'antd/es/input/Search';
 import SearchKeywordCard from './SearchKeywordCard';
 import { selectWorkingSearchWord } from '../../apis/productsApi';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 
-const SearchKeywordCardStep = ({
-    searchKeywordUrl,
-    setSearchKeywordUrl,
-    searchKeywordFocusedIndex,
-    setSearchKeywordFocusedIndex,
-}) => {
+const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocusedIndex }) => {
     const searchKeywordCardRefs = useRef([]);
-    const [loading, setLoading] = useState(false);
-    const [searchData, setSearchData] = useState([]); // 초기 상태를 빈 배열로 설정
-    const [hasMore, setHasMore] = useState(true); // 더 불러올 데이터가 있는지 여부
-    const [page, setPage] = useState(1); // 현재 페이지를 트래킹
+    const [searchData, setSearchData] = useState([]);
+    const [hasMore, setHasMore] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchKeywordUrl, setSearchKeywordUrl] = useState('');
+
+    const { page, setPage, setLoading } = useInfiniteScroll(hasMore, false);
 
     useEffect(() => {
         onSearch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight ||
-                loading
-            ) {
-                return;
-            }
-            if (hasMore) {
-                onSearch(searchKeywordUrl, true); // 추가 데이터를 로드
-            }
-        };
+        console.log('searchLoading', searchLoading);
+        if (page > 1 && !searchLoading) {
+            onSearch(searchTerm, true);
+        }
+    }, [page]);
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [loading, hasMore, searchKeywordUrl]);
+    const onSearch = async (value = searchTerm, isLoadMore = false) => {
+        if (searchLoading) return;
+
+        setSearchLoading(true);
+
+        try {
+            console.log('page 확인', page);
+            const response = await selectWorkingSearchWord(value, isLoadMore ? page : 1);
+            const { result: wspData, total: totalCount } = response;
+            console.log(response);
+            if (!isLoadMore) {
+                setSearchData(wspData);
+                setSearchKeywordFocusedIndex(0);
+            } else {
+                setSearchData((prevData) => [...prevData, ...wspData]);
+            }
+            if (wspData && searchData) {
+                if (wspData.length < 50 || searchData.length + wspData.length >= totalCount) {
+                    setHasMore(false);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error.message || error);
+            setHasMore(false);
+        } finally {
+            console.log('finally?');
+            setLoading(false);
+            setSearchLoading(false);
+        }
+    };
+
+    const handleSearch = (value) => {
+        setSearchTerm(value);
+        setHasMore(true);
+        setSearchData([]);
+        setPage(1);
+        onSearch(value);
+    };
 
     const handleSearchKeywordKeyDown = (e) => {
         if (e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -59,27 +86,6 @@ const SearchKeywordCardStep = ({
         setSearchKeywordUrl(searchData[index].detailPageUrl);
     };
 
-    const onSearch = async (value, isLoadMore = false) => {
-        setLoading(true);
-        try {
-            const wspData = await selectWorkingSearchWord(value, page); // 페이지 번호와 검색어를 API에 전달
-            if (wspData.length < 50) {
-                setHasMore(false); // 불러온 데이터가 50개 미만이라면 더 이상 데이터가 없음
-            }
-            if (isLoadMore) {
-                setSearchData((prevData) => [...prevData, ...wspData]);
-            } else {
-                setSearchData(wspData);
-            }
-            setPage((prevPage) => prevPage + 1); // 다음 페이지 번호로 증가
-            setSearchKeywordUrl(wspData[0]?.detailPageUrl || '');
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
         <>
             <Row>
@@ -88,8 +94,8 @@ const SearchKeywordCardStep = ({
                         placeholder="상품 검색어를 입력해 주세요"
                         enterButton="Search"
                         size="large"
-                        loading={loading}
-                        onSearch={onSearch}
+                        loading={searchLoading}
+                        onSearch={handleSearch}
                     />
                 </Col>
             </Row>
