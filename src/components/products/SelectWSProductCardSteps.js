@@ -128,7 +128,6 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
 
     const save = () => {
         putWorkingData(selectedWSProduct);
-        console.log(selectedWSProduct);
     };
 
     const handleSearch = (value) => {
