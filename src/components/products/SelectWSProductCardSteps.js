@@ -127,7 +127,11 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
     };
 
     const save = () => {
-        putWorkingData(selectedWSProduct);
+        const result = putWorkingData(selectedWSProduct);
+        alert(result.message);
+        onSearch();
+        setSelectedWSProduct([]);
+        console.log(result);
     };
 
     const handleSearch = (value) => {

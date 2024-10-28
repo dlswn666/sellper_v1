@@ -65,7 +65,11 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                 <Col span={24}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
                         <Image.PreviewGroup
-                            items={localData.images && localData.images.length > 0 ? localData.images : [defaultImage]}
+                            items={
+                                localData.thumbnail && localData.thumbnail.length > 0
+                                    ? localData.thumbnail
+                                    : [defaultImage]
+                            }
                         >
                             <div style={{ display: 'flex', flex: 1 }}>
                                 <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />

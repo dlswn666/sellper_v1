@@ -6,6 +6,7 @@ import ProductKeywordCard from '../components/products/ProductKeywordCard';
 import ProductTagCard from '../components/products/ProductTagCard';
 import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps';
 import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps';
+import ProductNameCardSteps from '../components/products/ProductNameCardSteps';
 
 const Products = () => {
     const initImageGroup = [
@@ -143,29 +144,7 @@ const Products = () => {
         {
             title: '상품명 등록',
             description: <span style={{ fontSize: '10px' }}>상품명을 입력하세요</span>,
-            content: (
-                <Row>
-                    <Col span={24}>
-                        <Space
-                            direction="vertical"
-                            size={'middle'}
-                            style={{ display: 'flex' }}
-                            onKeyDown={handleProductNameKeyDown}
-                            tabIndex={0}
-                        >
-                            {modifiedProductTestData.map((item, index) => (
-                                <ProductNameCard
-                                    key={index}
-                                    data={item}
-                                    isFocused={index === productNameFocusedIndex}
-                                    ref={(el) => (productNameCardRefs.current[index] = el)}
-                                    onCardFocus={() => setProductNameFocusedIndex(index)}
-                                />
-                            ))}
-                        </Space>
-                    </Col>
-                </Row>
-            ),
+            content: <ProductNameCardSteps></ProductNameCardSteps>,
         },
         {
             title: '키워드 등록',

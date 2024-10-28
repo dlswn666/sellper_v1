@@ -4,7 +4,7 @@ import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
-    const imageSrc = data.images && data.images.length > 0 ? data.images[0] : defaultImage;
+    const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
@@ -29,10 +29,10 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
             <Row>
-                <Col span={12}>
+                <Col span={24}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
                         <Image.PreviewGroup
-                            items={data.images && data.images.length > 0 ? data.images : [defaultImage]}
+                            items={data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail : [defaultImage]}
                         >
                             <div style={{ display: 'flex', flex: 1 }}>
                                 <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
@@ -45,7 +45,7 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={6}>
-                                            <p className="data-content">{data.productTitle}</p>
+                                            <p className="data-content">{data.wholeProductName}</p>
                                         </Col>
                                     </Row>
                                     <Divider className="divider" />
@@ -66,7 +66,7 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={6}>
-                                            <p className="data-content">{data.productNumber}</p>
+                                            <p className="data-content">{data.productCode}</p>
                                         </Col>
                                     </Row>
                                     <Divider className="divider" />
@@ -78,7 +78,7 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={6}>
-                                            <p className="data-content">{data.price}</p>
+                                            <p className="data-content">{data.wholeProductPrice}</p>
                                         </Col>
                                         <Col span={5}>
                                             <p className="data-title">설정 검색어 :</p>
@@ -87,7 +87,7 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                             <p className="data-title">:</p>
                                         </Col>
                                         <Col span={6}>
-                                            <p className="data-content">{data.productNumber}</p>
+                                            <p className="data-content">{data.searchWord}</p>
                                         </Col>
                                     </Row>
                                 </div>
@@ -98,7 +98,6 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                         </div>
                     </Card>
                 </Col>
-                <Col span={12}></Col>
             </Row>
         </Space>
     );
