@@ -75,6 +75,7 @@ const ProductNameCardSteps = () => {
 
     const handleProductNameKeyDown = (e) => {
         if (e.key === 'ArrowDown') {
+            console.log('focus1');
             setProductNameFocusedIndex((prevIndex) => {
                 const newIndex = Math.min(prevIndex + 1, modifiedProductTestData.length - 1);
                 productNameCardRefs.current[newIndex]?.focusInput();
@@ -82,11 +83,13 @@ const ProductNameCardSteps = () => {
             });
         } else if (e.key === 'ArrowUp') {
             setProductNameFocusedIndex((prevIndex) => {
+                console.log('focus2');
                 const newIndex = Math.max(prevIndex - 1, 0);
                 productNameCardRefs.current[newIndex]?.focusInput();
                 return newIndex;
             });
         }
+        console.log('focus3');
     };
 
     return (
@@ -109,7 +112,7 @@ const ProductNameCardSteps = () => {
                     </p>
                 </Col>
             </Row>
-            <Row>
+            <Row gutter={16} style={{ marginBottom: '10px' }}>
                 <Col span={12}>
                     <Space
                         direction="vertical"
@@ -128,6 +131,15 @@ const ProductNameCardSteps = () => {
                                     onCardFocus={() => setProductNameFocusedIndex(index)}
                                 />
                             ))
+                        ) : (
+                            <Empty />
+                        )}
+                    </Space>
+                </Col>
+                <Col span={12}>
+                    <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
+                        {searchData && searchData.length > 0 ? (
+                            searchData.map((item, index) => <span key={index}>{item.recoProductNm}</span>)
                         ) : (
                             <Empty />
                         )}
