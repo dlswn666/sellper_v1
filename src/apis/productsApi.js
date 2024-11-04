@@ -74,3 +74,14 @@ export const getAutoReco = async (data, page = 1, limit = 50) => {
         throw error; // 에러를 다시 던져서 호출한 곳에서 에러 처리할 수 있게 함
     }
 };
+
+// 상품명 저장
+export const putProductName = async (data) => {
+    let reqUrl = `/api/putProductName`;
+    try {
+        const response = await apiProducts.put(reqUrl, data);
+        return response;
+    } catch (error) {
+        console.error('Error put putWorkingData : ', error);
+    }
+};

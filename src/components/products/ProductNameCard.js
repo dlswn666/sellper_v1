@@ -1,11 +1,12 @@
 import { Card, Image, Space, Row, Col, Divider } from 'antd';
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
+    const [inputValue, setInputValue] = useState('');
 
     useImperativeHandle(ref, () => ({
         focusInput: () => {
@@ -13,18 +14,17 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                 inputRef.current.focus();
             }
         },
+        getInputValue: () => inputValue,
+        setInputValue: (value) => {
+            setInputValue((prevValue) => `${prevValue} ${value}`.trim()); // 기존 값에 새 단어 추가
+        },
     }));
 
     useEffect(() => {
-        console.log(isFocused);
         if (isFocused && inputRef.current) {
             inputRef.current.focus();
         }
     }, [isFocused]);
-
-    const fnOnBlur = () => {
-        console.log('데이터 저장');
-    };
 
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
@@ -94,7 +94,12 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                             </div>
                         </Image.PreviewGroup>
                         <div style={{ marginTop: 16 }}>
-                            <InputComponent ref={inputRef} placeholder="상품명을 입력해주세요" onBlur={fnOnBlur} />
+                            <InputComponent
+                                ref={inputRef}
+                                placeholder="상품명을 입력해주세요"
+                                value={inputValue} // value를 상태로 관리하여 전달
+                                onChange={(e) => setInputValue(e.target.value)} // 상태 업데이트
+                            />
                         </div>
                     </Card>
                 </Col>

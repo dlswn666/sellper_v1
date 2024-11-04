@@ -18,6 +18,10 @@ const ProductNameCardSteps = () => {
 
     const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
 
+    const [prevIndex, setPrevIndex] = useState(null);
+    const [productNameFocusedIndex, setProductNameFocusedIndex] = useState(0);
+    const productNameCardRefs = useRef([]);
+
     useEffect(() => {
         onSearch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,9 +74,6 @@ const ProductNameCardSteps = () => {
         images: initImageGroup,
     }));
 
-    const [productNameFocusedIndex, setProductNameFocusedIndex] = useState(0);
-    const productNameCardRefs = useRef([]);
-
     const handleProductNameKeyDown = (e) => {
         if (e.key === 'ArrowDown') {
             console.log('focus1');
@@ -93,12 +94,39 @@ const ProductNameCardSteps = () => {
     };
 
     const onFocusProductNameCard = (index) => {
+        if (prevIndex !== null && productNameCardRefs.current[prevIndex]) {
+            const prevValue = productNameCardRefs.current[prevIndex].getInputValue(); // 이전 인덱스의 값 가져오기
+            if (prevValue) {
+                console.log('이전 인덱스:', prevIndex, '값:', prevValue);
+                console.log(searchData[prevIndex]);
+                let paramData = {
+                    ...searchData[prevIndex],
+                    productName: prevValue,
+                };
+
+                const response = putProductName(paramData);
+            }
+        }
+
+        // 새로운 인덱스를 이전 인덱스로 저장
+        setPrevIndex(index);
         setProductNameFocusedIndex(index);
-        setRecoProductName(searchData[index].recoProductNm.split(','));
+
+        if (searchData[index]) {
+            setRecoProductName(searchData[index].recoProductNm.split(','));
+        }
     };
+
+    const putProductName = async (data) => {};
 
     const handleRemoveWord = (index) => {
         setRecoProductName((prevWords) => prevWords.filter((_, i) => i !== index));
+    };
+
+    const onWordClick = (index, word) => {
+        if (productNameCardRefs.current[index]) {
+            productNameCardRefs.current[index].setInputValue(word); // 선택한 단어를 해당 카드의 input에 설정
+        }
     };
 
     // 스타일링과 클릭 핸들러를 적용하여 단어를 렌더링
@@ -108,25 +136,37 @@ const ProductNameCardSteps = () => {
             style={{
                 padding: '5px 10px',
                 margin: '5px',
-                backgroundColor: '#e0f7fa',
+                backgroundColor: '#fff',
                 borderRadius: '8px',
                 display: 'inline-block',
                 cursor: 'pointer',
                 position: 'relative', // 상대 위치 설정
             }}
+            onClick={() => onWordClick(productNameFocusedIndex, word)} // 클릭 시 input에 데이터 전달
+            onMouseEnter={(e) => {
+                const closeButton = e.currentTarget.querySelector('.remove-icon');
+                if (closeButton) closeButton.style.visibility = 'visible'; // 마우스 올릴 때 보이게 설정
+            }}
+            onMouseLeave={(e) => {
+                const closeButton = e.currentTarget.querySelector('.remove-icon');
+                if (closeButton) closeButton.style.visibility = 'hidden'; // 마우스 벗어나면 숨기기
+            }}
         >
             {word.trim()}
             <span
-                onClick={() => handleRemoveWord(index)}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveWord(index);
+                }}
                 style={{
                     position: 'absolute',
-                    top: '5px',
-                    right: '5px',
+                    top: '-5px',
+                    right: '-5px',
                     width: '16px',
                     height: '16px',
                     borderRadius: '50%',
-                    backgroundColor: '#f44336',
-                    color: '#fff',
+                    backgroundColor: '#fff',
+                    color: '#212529',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
