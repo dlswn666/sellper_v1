@@ -78,6 +78,7 @@ export const getAutoReco = async (data, page = 1, limit = 50) => {
 // 상품명 저장
 export const putProductName = async (data) => {
     let reqUrl = `/api/putProductName`;
+    console.log(data);
     try {
         const response = await apiProducts.put(reqUrl, data);
         return response;

@@ -147,37 +147,6 @@ const Products = () => {
             content: <ProductNameCardSteps></ProductNameCardSteps>,
         },
         {
-            title: '키워드 등록',
-            description: (
-                <span style={{ fontSize: '10px' }}>
-                    상품 키워드를 <br /> 입력하세요
-                </span>
-            ),
-            content: (
-                <Row>
-                    <Col span={24}>
-                        <Space
-                            direction="vertical"
-                            size={'middle'}
-                            style={{ display: 'flex' }}
-                            onKeyDown={handleProductKeywordKeyDown}
-                            tabIndex={0}
-                        >
-                            {modifiedProductTestData.map((item, index) => (
-                                <ProductKeywordCard
-                                    key={index}
-                                    data={item}
-                                    isFocused={index === productKeywordFocusedIndex}
-                                    ref={(el) => (productKeywordCardRefs.current[index] = el)}
-                                    onCardFocus={() => setProductKeywordFocusedIndex(index)}
-                                />
-                            ))}
-                        </Space>
-                    </Col>
-                </Row>
-            ),
-        },
-        {
             title: '태그 등록',
             description: <span style={{ fontSize: '10px' }}>상품 태그를 입력하세요</span>,
             content: (
@@ -204,6 +173,37 @@ const Products = () => {
                 </Row>
             ),
         },
+        // {
+        //     title: '키워드 등록',
+        //     description: (
+        //         <span style={{ fontSize: '10px' }}>
+        //             상품 키워드를 <br /> 입력하세요
+        //         </span>
+        //     ),
+        //     content: (
+        //         <Row>
+        //             <Col span={24}>
+        //                 <Space
+        //                     direction="vertical"
+        //                     size={'middle'}
+        //                     style={{ display: 'flex' }}
+        //                     onKeyDown={handleProductKeywordKeyDown}
+        //                     tabIndex={0}
+        //                 >
+        //                     {modifiedProductTestData.map((item, index) => (
+        //                         <ProductKeywordCard
+        //                             key={index}
+        //                             data={item}
+        //                             isFocused={index === productKeywordFocusedIndex}
+        //                             ref={(el) => (productKeywordCardRefs.current[index] = el)}
+        //                             onCardFocus={() => setProductKeywordFocusedIndex(index)}
+        //                         />
+        //                     ))}
+        //                 </Space>
+        //             </Col>
+        //         </Row>
+        //     ),
+        // },
         {
             title: '카테고리 등록',
             description: '상품명 등록',

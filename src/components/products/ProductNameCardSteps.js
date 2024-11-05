@@ -6,7 +6,7 @@ import productNameTestData from '../../assets/testData/productNameTestData';
 import ProductNameCard from './ProductNameCard';
 import Search from 'antd/es/input/Search';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
-import { getAutoReco } from '../../apis/productsApi';
+import { getAutoReco, putProductName } from '../../apis/productsApi';
 import '../../css/productNameCard.css';
 
 const ProductNameCardSteps = () => {
@@ -98,13 +98,14 @@ const ProductNameCardSteps = () => {
             const prevValue = productNameCardRefs.current[prevIndex].getInputValue(); // 이전 인덱스의 값 가져오기
             if (prevValue) {
                 console.log('이전 인덱스:', prevIndex, '값:', prevValue);
-                console.log(searchData[prevIndex]);
                 let paramData = {
                     ...searchData[prevIndex],
                     productName: prevValue,
                 };
+                console.log(paramData);
 
-                const response = putProductName(paramData);
+                const response = reqPutProductName(paramData);
+                console.log(response);
             }
         }
 
@@ -117,7 +118,9 @@ const ProductNameCardSteps = () => {
         }
     };
 
-    const putProductName = async (data) => {};
+    const reqPutProductName = async (data) => {
+        return await putProductName(data);
+    };
 
     const handleRemoveWord = (index) => {
         setRecoProductName((prevWords) => prevWords.filter((_, i) => i !== index));

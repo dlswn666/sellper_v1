@@ -44,7 +44,7 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                         <Col span={1}>
                                             <p className="data-title">:</p>
                                         </Col>
-                                        <Col span={6}>
+                                        <Col span={18}>
                                             <p className="data-content">{data.wholeProductName}</p>
                                         </Col>
                                     </Row>
