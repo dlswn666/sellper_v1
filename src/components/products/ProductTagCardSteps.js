@@ -1,6 +1,6 @@
 import { Col, Row, Space } from 'antd';
-import Search from 'antd/es/transfer/search';
-import { useState } from 'react';
+import Search from 'antd/es/input/Search';
+import { useEffect, useRef, useState } from 'react';
 import { getAutoReco } from '../../apis/productsApi';
 import { result } from 'lodash';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
@@ -12,10 +12,18 @@ const ProductTageCardSteps = () => {
     const [hasMore, setHasMore] = useState(true);
     const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
     const [productTagFocusedIndex, setProductTagFocusedIndex] = useState(0);
+    const productTagCardRefs = useRef([]);
 
-    useState(() => {
+    useEffect(() => {
         onSearch();
-    });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (page > 1 && !searchLoading) {
+            onSearch(searchTerm, true);
+        }
+    }, [page]);
 
     const onSearch = async (value = searchTerm, isLoadMore = false) => {
         if (searchLoading) return;
@@ -49,14 +57,14 @@ const ProductTageCardSteps = () => {
             console.log('focus1');
             setProductTagFocusedIndex((prevIndex) => {
                 const newIndex = Math.min(prevIndex + 1, 0);
-                productNameCardRefs.current[newIndex]?.focusInput();
+                productTagCardRefs.current[newIndex]?.focusInput();
                 return newIndex;
             });
         } else if (e.key === 'ArrowUp') {
             setProductTagFocusedIndex((prevIndex) => {
                 console.log('focus2');
                 const newIndex = Math.max(prevIndex - 1, 0);
-                productNameCardRefs.current[newIndex]?.focusInput();
+                productTagCardRefs.current[newIndex]?.focusInput();
                 return newIndex;
             });
         }
@@ -72,8 +80,7 @@ const ProductTageCardSteps = () => {
                         enterButton="Search"
                         size="large"
                         loading={searchLoading}
-                        onSearch={handleSearch}
-                    ></Search>
+                    />
                 </Col>
             </Row>
             <Row gutter={16} style={{ marginBottom: '10px' }}>
