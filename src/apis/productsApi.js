@@ -61,8 +61,8 @@ export const putSearchWord = async (data) => {
 };
 
 // 추천 검색어 검색
-export const getAutoReco = async (data, page = 1, limit = 50) => {
-    let reqUrl = `/api/getAutoReco?page=${page}&limit=${limit}`;
+export const getAutoReco = async (data, page = 1, limit = 50, flag) => {
+    let reqUrl = `/api/getAutoReco?page=${page}&limit=${limit}&flag=${flag}`;
     if (data) {
         reqUrl += `&search=${data}`;
     }

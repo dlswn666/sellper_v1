@@ -40,7 +40,7 @@ const ProductNameCardSteps = () => {
 
         setSearchLoading(true);
         try {
-            const response = await getAutoReco(value, isLoadMore ? page : 1, limit);
+            const response = await getAutoReco(value, isLoadMore ? page : 1, limit, 'proName');
             const result = response;
             if (!isLoadMore) {
                 setSearchData(result);
@@ -54,7 +54,6 @@ const ProductNameCardSteps = () => {
                 }
             }
         } catch (error) {
-            console.error(error);
             setHasMore(false);
         } finally {
             setLoading(false);
@@ -62,23 +61,11 @@ const ProductNameCardSteps = () => {
         }
     };
 
-    // 테스트 데이터
-    const initImageGroup = [
-        'https://gw.alipayobjects.com/zos/antfincdn/LlvErxo8H9/photo-1503185912284-5271ff81b9a8.webp',
-        'https://gw.alipayobjects.com/zos/antfincdn/cV16ZqzMjW/photo-1473091540282-9b846e7965e3.webp',
-        'https://gw.alipayobjects.com/zos/antfincdn/x43I27A55%26/photo-1438109491414-7198515b166b.webp',
-    ];
-    // 테스트 데이터
-    const modifiedProductTestData = productNameTestData.map((item) => ({
-        ...item,
-        images: initImageGroup,
-    }));
-
     const handleProductNameKeyDown = (e) => {
         if (e.key === 'ArrowDown') {
             console.log('focus1');
             setProductNameFocusedIndex((prevIndex) => {
-                const newIndex = Math.min(prevIndex + 1, modifiedProductTestData.length - 1);
+                const newIndex = Math.min(prevIndex + 1, 0);
                 productNameCardRefs.current[newIndex]?.focusInput();
                 return newIndex;
             });
@@ -97,15 +84,12 @@ const ProductNameCardSteps = () => {
         if (prevIndex !== null && productNameCardRefs.current[prevIndex]) {
             const prevValue = productNameCardRefs.current[prevIndex].getInputValue(); // 이전 인덱스의 값 가져오기
             if (prevValue) {
-                console.log('이전 인덱스:', prevIndex, '값:', prevValue);
                 let paramData = {
                     ...searchData[prevIndex],
                     productName: prevValue,
                 };
-                console.log(paramData);
 
                 const response = reqPutProductName(paramData);
-                console.log(response);
             }
         }
 
