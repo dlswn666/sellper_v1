@@ -4,6 +4,7 @@ import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+    const [thumbNailUrl, setThumbNailUrl] = useState([]);
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
@@ -26,14 +27,19 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
         }
     }, [isFocused]);
 
+    useEffect(() => {
+        if (data.thumbnail && Array.isArray(data.thumbnail)) {
+            const urls = data.thumbnail.map((item) => item.thumbNailUrl);
+            setThumbNailUrl(urls);
+        }
+    }, [data.thumbnail]);
+
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
             <Row>
                 <Col span={24}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
-                        <Image.PreviewGroup
-                            items={data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail : [defaultImage]}
-                        >
+                        <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                             <div style={{ display: 'flex', flex: 1 }}>
                                 <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
                                 <div style={{ marginLeft: 16, flex: 1 }}>

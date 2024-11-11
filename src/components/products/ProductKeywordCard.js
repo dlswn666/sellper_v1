@@ -1,10 +1,11 @@
 import { Card, Image, Space, Row, Col } from 'antd';
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
-    const imageSrc = data.images && data.images.length > 0 ? data.images[0] : defaultImage;
+    const [thumbNailUrl, setThumbNailUrl] = useState([]);
+    const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
@@ -22,6 +23,13 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
         }
     }, [isFocused]);
 
+    useEffect(() => {
+        if (data.thumbnail && Array.isArray(data.thumbnail)) {
+            const urls = data.thumbnail.map((item) => item.thumbNailUrl);
+            setThumbNailUrl(urls);
+        }
+    }, [data.thumbnail]);
+
     const fnOnBlur = () => {
         console.log('데이터 저장');
     };
@@ -31,9 +39,7 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
             <Row>
                 <Col span={12}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
-                        <Image.PreviewGroup
-                            items={data.images && data.images.length > 0 ? data.images : [defaultImage]}
-                        >
+                        <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                             <div style={{ display: 'flex', flex: 1 }}>
                                 <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
                                 <div style={{ marginLeft: 16, flex: 1 }}>

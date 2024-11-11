@@ -2,12 +2,22 @@ import { Card, Image, Space, Row, Col, Divider } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import InputComponent from '../InputComponent';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
+import { putProductTag } from '../../apis/productsApi';
 
 const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+    const [thumbNailUrl, setThumbNailUrl] = useState([]);
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
-    console.log('tageData', data);
+    const [localData, setLocalData] = useState(structuredClone(data));
+
+    useEffect(() => {
+        if (data.thumbnail && Array.isArray(data.thumbnail)) {
+            const urls = data.thumbnail.map((item) => item.thumbNailUrl);
+            setThumbNailUrl(urls);
+        }
+    }, [data.thumbnail]);
+
     useImperativeHandle(ref, () => ({
         focusInput: () => {
             if (inputRef.current) {
@@ -16,24 +26,16 @@ const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
         },
         getInputValue: () => inputValue,
         setInputValue: (value) => {
-            setInputValue((prevValue) => `${prevValue} ${value}`.trim()); // 기존 값에 새 단어 추가
+            setInputValue((prevValue) => `${prevValue} ${value}`.trim());
         },
     }));
-
-    useEffect(() => {
-        if (isFocused && inputRef.current) {
-            inputRef.current.focus();
-        }
-    }, [isFocused]);
 
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
             <Row>
                 <Col span={24}>
                     <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
-                        <Image.PreviewGroup
-                            items={data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail : [defaultImage]}
-                        >
+                        <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                             <div style={{ display: 'flex', flex: 1 }}>
                                 <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
                                 <div style={{ marginLeft: 16, flex: 1 }}>
@@ -90,6 +92,7 @@ const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                             <p className="data-content">{data.searchWord}</p>
                                         </Col>
                                     </Row>
+                                    <Divider className="divider" />
                                     <Row className="table-row" gutter={[4, 1]}>
                                         <Col span={5}>
                                             <p className="data-title">가공 상품 이름</p>
@@ -107,14 +110,13 @@ const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                         <div style={{ marginTop: 16 }}>
                             <InputComponent
                                 ref={inputRef}
-                                placeholder="상품명을 입력해주세요"
-                                value={inputValue} // value를 상태로 관리하여 전달
-                                onChange={(e) => setInputValue(e.target.value)} // 상태 업데이트
+                                placeholder="상품 태그를 입력해주세요"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
                             />
                         </div>
                     </Card>
                 </Col>
-                <Col span={12}></Col>
             </Row>
         </Space>
     );

@@ -62,38 +62,32 @@ const ProductNameCardSteps = () => {
     };
 
     const handleProductNameKeyDown = (e) => {
-        if (e.key === 'ArrowDown') {
-            console.log('focus1');
+        if (e.key === 'ArrowDown' || e.key === 'Enter') {
             setProductNameFocusedIndex((prevIndex) => {
-                const newIndex = Math.min(prevIndex + 1, 0);
+                const newIndex = Math.min(prevIndex + 1, searchData.length - 1);
                 productNameCardRefs.current[newIndex]?.focusInput();
                 return newIndex;
             });
         } else if (e.key === 'ArrowUp') {
             setProductNameFocusedIndex((prevIndex) => {
-                console.log('focus2');
                 const newIndex = Math.max(prevIndex - 1, 0);
                 productNameCardRefs.current[newIndex]?.focusInput();
                 return newIndex;
             });
         }
-        console.log('focus3');
     };
 
     const onFocusProductNameCard = (index) => {
         if (prevIndex !== null && productNameCardRefs.current[prevIndex]) {
-            const prevValue = productNameCardRefs.current[prevIndex].getInputValue(); // 이전 인덱스의 값 가져오기
+            const prevValue = productNameCardRefs.current[prevIndex].getInputValue();
             if (prevValue) {
                 let paramData = {
                     ...searchData[prevIndex],
                     productName: prevValue,
                 };
-
-                const response = reqPutProductName(paramData);
+                reqPutProductName(paramData);
             }
         }
-
-        // 새로운 인덱스를 이전 인덱스로 저장
         setPrevIndex(index);
         setProductNameFocusedIndex(index);
 
@@ -118,52 +112,16 @@ const ProductNameCardSteps = () => {
 
     // 스타일링과 클릭 핸들러를 적용하여 단어를 렌더링
     const styledRecoProductName = recoProductName.map((word, index) => (
-        <span
-            key={index}
-            style={{
-                padding: '5px 10px',
-                margin: '5px',
-                backgroundColor: '#fff',
-                borderRadius: '8px',
-                display: 'inline-block',
-                cursor: 'pointer',
-                position: 'relative', // 상대 위치 설정
-            }}
-            onClick={() => onWordClick(productNameFocusedIndex, word)} // 클릭 시 input에 데이터 전달
-            onMouseEnter={(e) => {
-                const closeButton = e.currentTarget.querySelector('.remove-icon');
-                if (closeButton) closeButton.style.visibility = 'visible'; // 마우스 올릴 때 보이게 설정
-            }}
-            onMouseLeave={(e) => {
-                const closeButton = e.currentTarget.querySelector('.remove-icon');
-                if (closeButton) closeButton.style.visibility = 'hidden'; // 마우스 벗어나면 숨기기
-            }}
-        >
+        <span key={index} className="reco-word" onClick={() => onWordClick(productNameFocusedIndex, word)}>
             {word.trim()}
             <span
                 onClick={(e) => {
                     e.stopPropagation();
                     handleRemoveWord(index);
                 }}
-                style={{
-                    position: 'absolute',
-                    top: '-5px',
-                    right: '-5px',
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    backgroundColor: '#fff',
-                    color: '#212529',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    visibility: 'hidden', // 기본적으로 숨기기
-                }}
                 className="remove-icon"
             >
-                x
+                ×
             </span>
         </span>
     ));
@@ -214,7 +172,7 @@ const ProductNameCardSteps = () => {
                 </Col>
                 <Col span={12}>
                     <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
-                        <span> {styledRecoProductName}</span>
+                        <div className="reco-word-container">{styledRecoProductName}</div>
                     </Space>
                 </Col>
             </Row>

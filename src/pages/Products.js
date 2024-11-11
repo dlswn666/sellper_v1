@@ -8,6 +8,7 @@ import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps
 import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps';
 import ProductNameCardSteps from '../components/products/ProductNameCardSteps';
 import ProductTageCardSteps from '../components/products/ProductTagCardSteps';
+import ProductCategoryCardSteps from '../components/products/ProductCategoryCardSteps';
 
 const Products = () => {
     const initImageGroup = [
@@ -150,29 +151,6 @@ const Products = () => {
         {
             title: '태그 등록',
             description: <span style={{ fontSize: '10px' }}>상품 태그를 입력하세요</span>,
-            // content: (
-            //     <Row>
-            //         <Col span={24}>
-            //             <Space
-            //                 direction="vertical"
-            //                 size={'middle'}
-            //                 style={{ display: 'flex' }}
-            //                 onKeyDown={handleProductTagKeyDown}
-            //                 tabIndex={0}
-            //             >
-            //                 {modifiedProductTestData.map((item, index) => (
-            //                     <ProductTagCard
-            //                         key={index}
-            //                         data={item}
-            //                         isFocused={index === productTagFocusedIndex}
-            //                         ref={(el) => (productTagCardRefs.current[index] = el)}
-            //                         onCardFocus={() => setProductTagFocusedIndex(index)}
-            //                     />
-            //                 ))}
-            //             </Space>
-            //         </Col>
-            //     </Row>
-            // ),
             content: <ProductTageCardSteps></ProductTageCardSteps>,
         },
         // {
@@ -209,7 +187,7 @@ const Products = () => {
         {
             title: '카테고리 등록',
             description: '상품명 등록',
-            content: <div>상품 선택 컴포넌트 내용</div>,
+            content: <ProductCategoryCardSteps></ProductCategoryCardSteps>,
         },
         {
             title: '가격 설정',
