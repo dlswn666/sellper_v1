@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { Card, Image, Space, Row, Col, Divider, Tag } from 'antd';
+import { Card, Image, Space, Row, Col, Divider, Tag, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const ProductCategoryCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
-    console.log(data.thumbnail);
-    const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const [localData, setLocalData] = useState(data);
     const cardRef = useRef(null);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
 
     useEffect(() => {
         setLocalData(data);
-        const urls = data.thumbnail.map((item) => item.thumbNailUrl);
-        console.log(urls);
+        const urls = data.thumbnail?.map((item) => item.thumbNailUrl) || [];
         setThumbNailUrl(urls);
     }, [data]);
 
@@ -30,46 +30,54 @@ const ProductCategoryCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
             }
         },
         getSelectedCategory: () => selectedCategory,
-        setSelectedCategory: (category) => {
-            setSelectedCategory(category);
+        setSelectedCategory: async (category) => {
+            setIsLoading(true);
+            try {
+                const categoryInfo = {
+                    key: category.key,
+                    title: category.title,
+                    path: category.path,
+                };
+                setSelectedCategory(categoryInfo);
+            } finally {
+                setIsLoading(false);
+            }
         },
     }));
 
-    const renderCurrentCategory = () => {
-        if (!localData.cateNam) return null;
-
-        try {
-            const categories = JSON.parse(localData.cateNam);
-            return categories.map((category, index) => (
-                <div key={index} style={{ marginBottom: '8px' }}>
-                    <Space size={[0, 8]} wrap>
-                        {Object.entries(category)
-                            .filter(([key, value]) => value && key.startsWith('categoryNm'))
-                            .map(([key, value], i) => (
-                                <Tag key={i} color="blue">
-                                    {value}
-                                </Tag>
-                            ))}
-                    </Space>
-                </div>
-            ));
-        } catch (error) {
-            console.error('카테고리 파싱 에러:', error);
-            return null;
-        }
-    };
+    const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
     return (
         <Card
             ref={cardRef}
             hoverable
+            className="card-move-animation"
             style={{
                 width: '100%',
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                position: 'relative',
             }}
             onClick={onCardFocus}
             tabIndex={0}
         >
+            {isLoading && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(255, 255, 255, 0.7)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 1000,
+                    }}
+                >
+                    <Spin indicator={antIcon} />
+                </div>
+            )}
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>
                     <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
@@ -159,12 +167,22 @@ const ProductCategoryCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
                         <Divider className="divider" />
                         <Row className="table-row" gutter={[4, 1]}>
                             <Col span={5}>
-                                <p className="data-title">현재 카테고리</p>
+                                <p className="data-title">네이버 카테고리</p>
                             </Col>
                             <Col span={1}>
                                 <p className="data-title">:</p>
                             </Col>
-                            <Col span={18}>{renderCurrentCategory()}</Col>
+                            <Col span={18}>{data.naverCategory}</Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">쿠팡 카테고리</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>{data.coupangCategory}</Col>
                         </Row>
                         {selectedCategory && (
                             <>

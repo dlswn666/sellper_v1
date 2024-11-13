@@ -74,7 +74,6 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
         try {
             const response = await selectProductData(value, isLoadMore ? page : 1, limit);
             const { result: wspData, total: totalCount } = response;
-            console.log(response);
             if (!isLoadMore) {
                 setSearchData(wspData);
                 setSearchKeywordFocusedIndex(0);
@@ -131,7 +130,6 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
         alert(result.message);
         onSearch();
         setSelectedWSProduct([]);
-        console.log(result);
     };
 
     const handleSearch = (value) => {

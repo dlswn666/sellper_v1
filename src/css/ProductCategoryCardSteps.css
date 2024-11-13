@@ -17,6 +17,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
+    position: relative;
 }
 
 .category-card:hover {
@@ -28,6 +29,7 @@
 .category-card.selected {
     border: 2px solid #1890ff;
     background-color: #e6f7ff;
+    transform: translateX(4px);
 }
 
 .category-card-content {
@@ -55,4 +57,42 @@
 
 .category-card .ant-btn:hover {
     transform: none;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.card-move-animation {
+    transition: all 0.5s ease-in-out;
+}
+
+.category-card {
+    transition: all 0.3s ease;
+}
+
+.category-card.selected {
+    background-color: #f0f7ff;
+    border: 1px solid #1890ff;
+}
+
+.category-card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

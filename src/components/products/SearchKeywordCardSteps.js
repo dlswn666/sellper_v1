@@ -49,7 +49,6 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
             console.error('Error fetching data:', error.message || error);
             setHasMore(false);
         } finally {
-            console.log('finally?');
             setLoading(false);
             setSearchLoading(false);
         }

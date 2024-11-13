@@ -1,7 +1,8 @@
-import { Col, Empty, Row, Space, Tree, Card, Button, Tabs, message } from 'antd';
+import React from 'react';
+import { Col, Empty, Row, Space, Tree, Card, Button, Tabs, message, Affix } from 'antd';
 import Search from 'antd/es/input/Search';
 import { useEffect, useRef, useState } from 'react';
-import { getAutoReco, getCateProduct } from '../../apis/productsApi';
+import { getCateProduct, getProductById } from '../../apis/productsApi';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll';
 import ProductCategoryCard from './ProductCategoryCard';
 import { useProductCategory } from '../../hooks/useProductCategory';
@@ -16,7 +17,6 @@ const ProductCategoryCardSteps = () => {
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchData, setSearchData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [categoryData, setCategoryData] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [productCategoryFocusedIndex, setProductCategoryFocusedIndex] = useState(0);
     const productCategoryCardRefs = useRef([]);
@@ -36,6 +36,29 @@ const ProductCategoryCardSteps = () => {
             initializeFirstCard();
         }
     }, [searchData]);
+
+    useEffect(() => {
+        if (recommendedSelectedCategory) {
+            console.log('recommendedSelectedCategory', recommendedSelectedCategory);
+            const categoryPath = [
+                recommendedSelectedCategory.categoryNm1,
+                recommendedSelectedCategory.categoryNm2,
+                recommendedSelectedCategory.categoryNm3,
+                recommendedSelectedCategory.categoryNm4,
+                recommendedSelectedCategory.categoryNm5,
+                recommendedSelectedCategory.categoryNm6,
+            ].filter(Boolean);
+
+            const selectedCategoryInfo = {
+                node: {
+                    key: activeTab,
+                    title: `[${activeTab.toUpperCase()}] ${categoryPath.join(' > ')}`,
+                    path: categoryPath.join(' > '),
+                },
+            };
+            onSelect([selectedCategoryInfo.node.key], selectedCategoryInfo);
+        }
+    }, [recommendedSelectedCategory]);
 
     const initializeFirstCard = () => {
         setTimeout(() => {
@@ -80,7 +103,7 @@ const ProductCategoryCardSteps = () => {
         try {
             await putProductCategory({
                 productId: searchData[prevIndex].productId,
-                categoryPath: selectedCategory.key,
+                platformId: activeTab,
             });
         } catch (error) {
             console.error('카테고리 업데이트 중 오류 발생:', error);
@@ -127,12 +150,55 @@ const ProductCategoryCardSteps = () => {
                 platformId: activeTab,
             };
 
+            console.log('categoryData', categoryData);
+
             const response = await putProductCategory(categoryData);
 
             if (response.result) {
                 message.success('카테고리가 성공적으로 저장되었습니다.');
+
+                // 개별 상품 정보 업데이트
+                const updatedProduct = await getProductById(currentProduct.workingProductId);
+
+                // 현재 상품 데이터 업데이트
+                const newSearchData = [...searchData];
+                const updatedItem = {
+                    workingProductId: updatedProduct[0].workingProductId,
+                    productCode: updatedProduct[0].productCode,
+                    productName: updatedProduct[0].productName,
+                    wholeProductName: updatedProduct[0].wholeProductName,
+                    wholeProductPrice: updatedProduct[0].wholeProductPrice,
+                    wholesaleProductId: updatedProduct[0].wholesaleProductId,
+                    siteId: updatedProduct[0].siteId,
+                    siteName: updatedProduct[0].siteName,
+                    searchWord: updatedProduct[0].searchWord,
+                    naverCategory: updatedProduct[0].naverCategory,
+                    coupangCategory: updatedProduct[0].coupangCategory,
+                    platformTag: updatedProduct[0].platformTag,
+                    thumbnail: currentProduct.thumbnail, // 기존 썸네일 유지
+                    naver_recoCate: updatedProduct[0].naver_recoCate,
+                    B_recoCate: updatedProduct[0].B_recoCate,
+                    C_recoCate: updatedProduct[0].C_recoCate,
+                };
+
+                // 현재 인덱스의 데이터를 업데이트된 데이터로 교체
+                newSearchData[productCategoryFocusedIndex] = updatedItem;
+                console.log('newSearchData', newSearchData);
+
+                // 업데이트된 상품을 배열 맨 뒤로 이동
+                const [movedItem] = newSearchData.splice(productCategoryFocusedIndex, 1);
+                newSearchData.push(movedItem);
+
+                setSearchData(newSearchData);
+                // 첫 번째 카드에 포커스
+                setProductCategoryFocusedIndex(0);
                 setRecommendedSelectedCategory(null);
-                onSearch(searchTerm);
+                setSelectedCategory(null); // 선택된 카테고리 초기화
+                // onSelect([], null);
+
+                setTimeout(() => {
+                    productCategoryCardRefs.current[0]?.focusInput();
+                }, 100);
             } else {
                 message.error('카테고리 저장에 실패했습니다.');
             }
@@ -142,147 +208,72 @@ const ProductCategoryCardSteps = () => {
         }
     };
 
+    const renderCategoryPath = (category) => {
+        const categoryLevels = [1, 2, 3, 4, 5, 6];
+        return (
+            <div className="category-path">
+                {categoryLevels.map((level, idx) => {
+                    const categoryKey = `categoryNm${level}`;
+                    if (!category[categoryKey]) return null;
+
+                    return (
+                        <React.Fragment key={idx}>
+                            {idx > 0 && <span className="arrow">›</span>}
+                            <span>{category[categoryKey]}</span>
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    const renderCategoryCard = (category, index, platformId) => (
+        <div
+            key={index}
+            className={`category-card ${recommendedSelectedCategory === category ? 'selected' : ''}`}
+            onClick={() => setRecommendedSelectedCategory(category)}
+        >
+            <div className="category-card-content">
+                {renderCategoryPath(category)}
+                {recommendedSelectedCategory === category && (
+                    <Button
+                        type="primary"
+                        icon={<SaveOutlined />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            postRecommendedCategory(category);
+                        }}
+                    >
+                        확인
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+
     const renderRecommendedCategories = () => {
         const currentProduct = searchData[productCategoryFocusedIndex];
         if (!currentProduct) return null;
 
-        const items = [
-            {
-                key: 'naver',
-                label: '네이버',
-                children: currentProduct.naver_recoCate ? (
-                    <div className="category-cards">
-                        {currentProduct.naver_recoCate.map((category, index) => (
-                            <div
-                                key={index}
-                                className={`category-card ${recommendedSelectedCategory === index ? 'selected' : ''}`}
-                                onClick={() => setRecommendedSelectedCategory(index)}
-                            >
-                                <div className="category-card-content">
-                                    <div className="category-path">
-                                        <span>{category.categoryNm1}</span>
-                                        <span className="arrow">›</span>
-                                        <span>{category.categoryNm2}</span>
-                                        <span className="arrow">›</span>
-                                        <span>{category.categoryNm3}</span>
-                                        {category.categoryNm4 && (
-                                            <>
-                                                <span className="arrow">›</span>
-                                                <span>{category.categoryNm4}</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    {recommendedSelectedCategory === index && (
-                                        <Button
-                                            type="primary"
-                                            icon={<SaveOutlined />}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                postRecommendedCategory(category);
-                                            }}
-                                        >
-                                            저장
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <Empty description="추천 카테고리가 없습니다" />
-                ),
-            },
-            {
-                key: 'B',
-                label: 'B몰',
-                children: currentProduct.B_recoCate ? (
-                    <div className="category-cards">
-                        {currentProduct.B_recoCate.map((category, index) => (
-                            <div
-                                key={index}
-                                className={`category-card ${recommendedSelectedCategory === index ? 'selected' : ''}`}
-                                onClick={() => setRecommendedSelectedCategory(index)}
-                            >
-                                <div className="category-card-content">
-                                    <div className="category-path">
-                                        <span>{category.categoryNm1}</span>
-                                        <span className="arrow">›</span>
-                                        <span>{category.categoryNm2}</span>
-                                        <span className="arrow">›</span>
-                                        <span>{category.categoryNm3}</span>
-                                        {category.categoryNm4 && (
-                                            <>
-                                                <span className="arrow">›</span>
-                                                <span>{category.categoryNm4}</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    {recommendedSelectedCategory === index && (
-                                        <Button
-                                            type="primary"
-                                            icon={<SaveOutlined />}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                postRecommendedCategory(category);
-                                            }}
-                                        >
-                                            저장
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <Empty description="추천 카테고리가 없습니다" />
-                ),
-            },
-            {
-                key: 'C',
-                label: 'C몰',
-                children: currentProduct.C_recoCate ? (
-                    <div className="category-cards">
-                        {currentProduct.C_recoCate.map((category, index) => (
-                            <div
-                                key={index}
-                                className={`category-card ${recommendedSelectedCategory === index ? 'selected' : ''}`}
-                                onClick={() => setRecommendedSelectedCategory(index)}
-                            >
-                                <div className="category-card-content">
-                                    <div className="category-path">
-                                        <span>{category.categoryNm1}</span>
-                                        <span className="arrow">›</span>
-                                        <span>{category.categoryNm2}</span>
-                                        <span className="arrow">›</span>
-                                        <span>{category.categoryNm3}</span>
-                                        {category.categoryNm4 && (
-                                            <>
-                                                <span className="arrow">›</span>
-                                                <span>{category.categoryNm4}</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    {recommendedSelectedCategory === index && (
-                                        <Button
-                                            type="primary"
-                                            icon={<SaveOutlined />}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                postRecommendedCategory(category);
-                                            }}
-                                        >
-                                            저장
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <Empty description="추천 카테고리가 없습니다" />
-                ),
-            },
+        const platforms = [
+            { key: 'naver', label: '네이버', dataKey: 'naver_recoCate' },
+            { key: 'gmarket', label: 'G마켓', dataKey: 'B_recoCate' },
+            { key: 'C', label: 'C몰', dataKey: 'C_recoCate' },
         ];
+
+        const items = platforms.map((platform) => ({
+            key: platform.key,
+            label: platform.label,
+            children: currentProduct[platform.dataKey] ? (
+                <div className="category-cards">
+                    {currentProduct[platform.dataKey].map((category, index) =>
+                        renderCategoryCard(category, index, platform.key)
+                    )}
+                </div>
+            ) : (
+                <Empty description="추천 카테고리가 없습니다" />
+            ),
+        }));
 
         return (
             <div className="recommended-categories">
@@ -344,16 +335,11 @@ const ProductCategoryCardSteps = () => {
                     </Card>
                 </Col>
                 <Col span={12}>
-                    <Card title="카테고리 선택" style={{ minHeight: 'calc(100vh - 200px)' }}>
-                        {renderRecommendedCategories()}
-                        <DirectoryTree
-                            multiple={false}
-                            defaultExpandAll
-                            onSelect={onSelect}
-                            treeData={categoryData}
-                            selectedKeys={selectedCategory ? [selectedCategory.key] : []}
-                        />
-                    </Card>
+                    <Affix offsetTop={100}>
+                        <Card title="카테고리 선택" style={{ minHeight: 'calc(100vh - 200px)' }}>
+                            {renderRecommendedCategories()}
+                        </Card>
+                    </Affix>
                 </Col>
             </Row>
         </>

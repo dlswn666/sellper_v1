@@ -102,7 +102,6 @@ const ProductTagCardSteps = () => {
                     putProductTag(paramData);
                 } catch (error) {
                     console.error('태그 업데이트 중 오류 발생:', error);
-                    console.log('에러 데이터:', paramData);
                 }
             }
         }

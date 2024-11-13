@@ -78,7 +78,6 @@ export const getAutoReco = async (data, page = 1, limit = 50, flag) => {
 // 상품명 저장
 export const putProductName = async (data) => {
     let reqUrl = `/api/putProductName`;
-    console.log(data);
     try {
         const response = await apiProducts.put(reqUrl, data);
         return response;
@@ -122,6 +121,17 @@ export const getCateProduct = async (data, page = 1, limit = 50) => {
         return response.data;
     } catch (error) {
         console.error('Error fetching getCateProduct data:', error);
+        throw error;
+    }
+};
+
+export const getProductById = async (id) => {
+    let reqUrl = `/api/getProductById?id=${id}`;
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching getProductById data:', error);
         throw error;
     }
 };

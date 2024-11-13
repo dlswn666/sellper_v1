@@ -26,7 +26,6 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
 
     const onKeyDown = async (e) => {
         if (e.key === 'Enter') {
-            console.log(e.target.value);
             const curValue = e.target.value;
             const preValue = localData.searchWord ? localData.searchWord : '';
             const id = localData.workingProductId;
@@ -45,7 +44,6 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                         ...prevData,
                         searchWord: curValue, // searchWord 값 업데이트
                     }));
-                    console.log('param 확인', param);
                 }
             }
         }

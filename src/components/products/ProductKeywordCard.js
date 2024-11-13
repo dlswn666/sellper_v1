@@ -17,7 +17,6 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
     }));
 
     useEffect(() => {
-        console.log(isFocused);
         if (isFocused && inputRef.current) {
             inputRef.current.focus();
         }

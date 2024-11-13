@@ -48,7 +48,6 @@ export const GroupNavigation = () => {
         const currentIndex = groupKey.current.indexOf(currentInput);
 
         if (key === 'ArrowUp' && currentIndex > 0) {
-            console.log('확인');
             groupKey.current[currentIndex - 1].focus();
         } else if (key === 'ArrowDown' && currentIndex < groupKey.current.length - 1) {
             groupKey.current[currentIndex + 1].focus();
