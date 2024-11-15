@@ -135,3 +135,20 @@ export const getProductById = async (id) => {
         throw error;
     }
 };
+
+// 상품 가격 데이터 조회
+export const getProductPriceData = async (value = '', page = 1, limit = 50) => {
+    const offset = (page - 1) * limit;
+    let url = `/api/getProductPriceDataById?limit=${limit}&offset=${offset}`;
+    if (value) {
+        url += `&search=${value}`;
+    }
+    try {
+        const response = await apiProducts.get(url);
+
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching product price data:', error);
+        throw error;
+    }
+};

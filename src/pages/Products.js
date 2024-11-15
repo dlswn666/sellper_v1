@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Space, Row, Col, Steps } from 'antd';
-import ProductNameCard from '../components/products/ProductNameCard';
 import productNameTestData from '../assets/testData/productNameTestData';
-import ProductKeywordCard from '../components/products/ProductKeywordCard';
-import ProductTagCard from '../components/products/ProductTagCard';
 import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps';
 import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps';
 import ProductNameCardSteps from '../components/products/ProductNameCardSteps';
 import ProductTageCardSteps from '../components/products/ProductTagCardSteps';
 import ProductCategoryCardSteps from '../components/products/ProductCategoryCardSteps';
+import ProductPriceCardSteps from '../components/products/ProductPriceCardSteps';
 
 const Products = () => {
     const initImageGroup = [
@@ -153,37 +151,6 @@ const Products = () => {
             description: <span style={{ fontSize: '10px' }}>상품 태그를 입력하세요</span>,
             content: <ProductTageCardSteps></ProductTageCardSteps>,
         },
-        // {
-        //     title: '키워드 등록',
-        //     description: (
-        //         <span style={{ fontSize: '10px' }}>
-        //             상품 키워드를 <br /> 입력하세요
-        //         </span>
-        //     ),
-        //     content: (
-        //         <Row>
-        //             <Col span={24}>
-        //                 <Space
-        //                     direction="vertical"
-        //                     size={'middle'}
-        //                     style={{ display: 'flex' }}
-        //                     onKeyDown={handleProductKeywordKeyDown}
-        //                     tabIndex={0}
-        //                 >
-        //                     {modifiedProductTestData.map((item, index) => (
-        //                         <ProductKeywordCard
-        //                             key={index}
-        //                             data={item}
-        //                             isFocused={index === productKeywordFocusedIndex}
-        //                             ref={(el) => (productKeywordCardRefs.current[index] = el)}
-        //                             onCardFocus={() => setProductKeywordFocusedIndex(index)}
-        //                         />
-        //                     ))}
-        //                 </Space>
-        //             </Col>
-        //         </Row>
-        //     ),
-        // },
         {
             title: '카테고리 등록',
             description: '상품명 등록',
@@ -192,7 +159,7 @@ const Products = () => {
         {
             title: '가격 설정',
             description: '상품명 등록',
-            content: <div>상품 선택 컴포넌트 내용</div>,
+            content: <ProductPriceCardSteps></ProductPriceCardSteps>,
         },
         {
             title: '상품 옵션 설정',
