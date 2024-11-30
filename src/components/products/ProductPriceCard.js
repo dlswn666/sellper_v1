@@ -1,19 +1,28 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { Card, Image, Space, Row, Col, Divider, Tag, InputNumber } from 'antd';
+import { Card, Image, Space, Row, Col, Divider, Tag, InputNumber, Button } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
+import ProductPriceCardSteps from './ProductPriceCardSteps';
+import { EditOutlined } from '@ant-design/icons';
+
+const formatKRW = (number) => {
+    return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
 
 const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChange }, ref) => {
     const [localData, setLocalData] = useState(data);
     const cardRef = useRef(null);
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
-    const [price, setPrice] = useState(Number(data.wholeProductPrice.replace(/[^0-9]/g, '')));
+    const [price, setPrice] = useState(data.platformPrices?.[0]?.finalPrice || 0);
 
     useEffect(() => {
         setLocalData(data);
         const urls = data.thumbnail?.map((item) => item.thumbNailUrl) || [];
         setThumbNailUrl(urls);
-    }, [data]);
+        if (data.platformPrices?.[0]?.finalPrice) {
+            setPrice(data.platformPrices[0].finalPrice);
+        }
+    }, [data, data.platformPrices]);
 
     useEffect(() => {
         if (isFocused && cardRef.current) {
@@ -29,13 +38,6 @@ const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChan
         },
         getNewPrice: () => price,
     }));
-
-    const handlePriceChange = (value) => {
-        setPrice(value);
-        if (onPriceChange) {
-            onPriceChange(value);
-        }
-    };
 
     return (
         <Card
@@ -94,7 +96,7 @@ const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChan
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={6}>
-                                <p className="data-content">{data.wholeProductPrice}</p>
+                                <p className="data-content">{formatKRW(data.wholeProductPrice)}</p>
                             </Col>
                             <Col span={5}>
                                 <p className="data-title">설정 검색어</p>
@@ -204,8 +206,10 @@ const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChan
                                     <InputNumber
                                         min={0}
                                         value={price}
-                                        onChange={handlePriceChange}
-                                        style={{ width: '150px' }}
+                                        style={{ width: '150px', color: '#000', backgroundColor: '#f0f0f0' }}
+                                        formatter={(value) => formatKRW(value)}
+                                        parser={(value) => value.replace(/[^\d]/g, '')}
+                                        disabled
                                     />
                                     <span>원</span>
                                 </Space>

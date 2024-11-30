@@ -137,11 +137,14 @@ export const getProductById = async (id) => {
 };
 
 // 상품 가격 데이터 조회
-export const getProductPriceData = async (value = '', page = 1, limit = 50) => {
+export const getProductPriceData = async (productId = '', search = '', page = 1, limit = 50) => {
     const offset = (page - 1) * limit;
     let url = `/api/getProductPriceData?limit=${limit}&offset=${offset}`;
-    if (value) {
-        url += `&search=${value}`;
+    if (productId) {
+        url += `&productId=${productId}`;
+    }
+    if (search) {
+        url += `&search=${search}`;
     }
     try {
         const response = await apiProducts.get(url);
@@ -160,6 +163,19 @@ export const getPlatformPriceById = async (productId) => {
         return response.data;
     } catch (error) {
         console.error('Error fetching platform price data:', error);
+        throw error;
+    }
+};
+
+// 플랫폼 가격 정보 수정
+export const putPlatformPrice = async (data) => {
+    let reqUrl = `/api/putPlatformPrice`;
+    try {
+        const response = await apiProducts.put(reqUrl, data);
+        console.log(response);
+        return response.data;
+    } catch (error) {
+        console.error('Error put putPlatformPrice:', error);
         throw error;
     }
 };

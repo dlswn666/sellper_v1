@@ -52,3 +52,45 @@ span:hover .remove-icon {
     background-color: #ff4d4f;
     color: white;
 }
+
+.platform-price-card {
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.platform-price-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.platform-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.platform-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1890ff;
+    margin: 0;
+}
+
+.price-input-group {
+    margin-bottom: 12px;
+}
+
+.price-input-group .ant-typography {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.price-input-group .ant-input-affix-wrapper {
+    border-radius: 4px;
+}
+
+.price-input-group .ant-input-disabled {
+    background-color: #f5f5f5;
+    color: rgba(0, 0, 0, 0.65);
+}
