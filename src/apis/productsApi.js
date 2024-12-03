@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiProducts = axios.create({
-    baseURL: 'http://localhost:3001',
+    baseURL: process.env.BASE_URL,
     headers: {},
 });
 
