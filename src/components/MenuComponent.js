@@ -1,7 +1,7 @@
 import React from 'react';
 import { Menu } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { HomeOutlined, SettingOutlined } from '@ant-design/icons'; // HomeOutlined 아이콘을 import
+import { HomeOutlined } from '@ant-design/icons'; // HomeOutlined 아이콘을 import
 
 const MenuComponent = () => {
     const navigate = useNavigate();

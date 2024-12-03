@@ -1,12 +1,9 @@
 import { Col, Empty, Row, Space } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
-
-//테스트 데이터
-import productNameTestData from '../../assets/testData/productNameTestData';
-import ProductNameCard from './ProductNameCard';
-import Search from 'antd/es/input/Search';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
-import { getAutoReco, putProductName } from '../../apis/productsApi';
+import ProductNameCard from './ProductNameCard.js';
+import Search from 'antd/es/input/Search.js';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
+import { getAutoReco, putProductName } from '../../apis/productsApi.js';
 import '../../css/productNameCard.css';
 
 const ProductNameCardSteps = () => {

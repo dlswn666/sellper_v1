@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { Card, Image, Space, Row, Col, Divider, Tag, InputNumber, Button } from 'antd';
+import { Card, Image, Space, Row, Col, Divider, InputNumber } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
-import ProductPriceCardSteps from './ProductPriceCardSteps';
-import { EditOutlined } from '@ant-design/icons';
 
 const formatKRW = (number) => {
     return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');

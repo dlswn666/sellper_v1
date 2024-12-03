@@ -1,5 +1,5 @@
 import React from 'react';
-import MenuComponent from '../components/MenuComponent';
+import MenuComponent from '../components/MenuComponent.js';
 
 const Header = () => {
     return (

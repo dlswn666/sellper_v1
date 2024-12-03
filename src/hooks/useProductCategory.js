@@ -1,4 +1,4 @@
-import { putProductCategory } from '../apis/productsApi';
+import { putProductCategory } from '../apis/productsApi.js';
 
 export const useProductCategory = () => {
     const updateProductCategory = async (data) => {

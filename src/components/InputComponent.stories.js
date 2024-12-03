@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import InputComponent from './InputComponent';
+import InputComponent from './InputComponent.js';
 
 export default {
     title: 'Components/InputComponent',

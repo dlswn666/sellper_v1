@@ -1,9 +1,9 @@
 import { Col, Empty, Row, Space } from 'antd';
-import Search from 'antd/es/input/Search';
+import Search from 'antd/es/input/Search.js';
 import { useEffect, useRef, useState } from 'react';
-import { getAutoReco, putProductTag } from '../../apis/productsApi';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
-import ProductTagCard from './ProductTagCard';
+import { getAutoReco, putProductTag } from '../../apis/productsApi.js';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
+import ProductTagCard from './ProductTagCard.js';
 import '../../css/productNameCard.css';
 
 const ProductTagCardSteps = () => {

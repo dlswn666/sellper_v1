@@ -2,7 +2,7 @@ import { Card, Image, Space, Row, Col, Divider, Input } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
-import { putSearchWord } from '../../apis/productsApi';
+import { putSearchWord } from '../../apis/productsApi.js';
 
 const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;

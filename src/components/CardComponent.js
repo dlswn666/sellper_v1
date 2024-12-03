@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Col, Row, Input } from 'antd';
-import InputComponent from './InputComponent';
+import { Card, Col, Row } from 'antd';
+import InputComponent from './InputComponent.js';
 
 const { Meta } = Card;
 

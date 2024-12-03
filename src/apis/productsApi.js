@@ -179,3 +179,34 @@ export const putPlatformPrice = async (data) => {
         throw error;
     }
 };
+
+// 상품 속성 데이터 조회
+export const getProductAttributeData = async (productId, search, page = 1, limit = 100) => {
+    const offset = (page - 1) * limit;
+    let reqUrl = `/api/getProductAttributeData?limit=${limit}&offset=${offset}`;
+    if (productId) {
+        reqUrl += `&productId=${productId}`;
+    }
+    if (search) {
+        reqUrl += `&search=${search}`;
+    }
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching product attribute data:', error);
+        throw error;
+    }
+};
+
+// 상품 상세 이미지 조회
+export const getProductDetailImage = async (wholesaleProductId) => {
+    let reqUrl = `/api/getProductDetailImage?wholesaleProductId=${wholesaleProductId}`;
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching product detail image:', error);
+        throw error;
+    }
+};

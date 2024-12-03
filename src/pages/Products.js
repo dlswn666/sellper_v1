@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Space, Row, Col, Steps } from 'antd';
-import productNameTestData from '../assets/testData/productNameTestData';
-import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps';
-import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps';
-import ProductNameCardSteps from '../components/products/ProductNameCardSteps';
-import ProductTageCardSteps from '../components/products/ProductTagCardSteps';
-import ProductCategoryCardSteps from '../components/products/ProductCategoryCardSteps';
-import ProductPriceCardSteps from '../components/products/ProductPriceCardSteps';
-
+import productNameTestData from '../assets/testData/productNameTestData.js';
+import SearchKeywordCardStep from '../components/products/SearchKeywordCardSteps.js';
+import SelectWSProductCardSteps from '../components/products/SelectWSProductCardSteps.js';
+import ProductNameCardSteps from '../components/products/ProductNameCardSteps.js';
+import ProductTageCardSteps from '../components/products/ProductTagCardSteps.js';
+import ProductCategoryCardSteps from '../components/products/ProductCategoryCardSteps.js';
+import ProductPriceCardSteps from '../components/products/ProductPriceCardSteps.js';
+import ProductAttributeCardSteps from '../components/products/ProductAttributeCardSteps.js';
 const Products = () => {
     const initImageGroup = [
         'https://gw.alipayobjects.com/zos/antfincdn/LlvErxo8H9/photo-1503185912284-5271ff81b9a8.webp',
@@ -162,9 +162,9 @@ const Products = () => {
             content: <ProductPriceCardSteps></ProductPriceCardSteps>,
         },
         {
-            title: '상품 옵션 설정',
-            description: '상품명 등록',
-            content: <div>상품 선택 컴포넌트 내용</div>,
+            title: '상품 주요 정보',
+            description: '상품 주요 정보 입력',
+            content: <ProductAttributeCardSteps></ProductAttributeCardSteps>,
         },
         {
             title: '썸네일 가공',

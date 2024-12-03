@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Button, Flex, Table, Divider } from 'antd';
-import Search from 'antd/es/input/Search';
-import SelectWSProductCard from './SelectWSProductCard';
-import { putWorkingData, selectProductData } from '../../apis/productsApi';
+import { Row, Col, Space, Empty, Button, Flex, Table } from 'antd';
+import Search from 'antd/es/input/Search.js';
+import SelectWSProductCard from './SelectWSProductCard.js';
+import { putWorkingData, selectProductData } from '../../apis/productsApi.js';
 import { CheckOutlined, CloseOutlined, FormOutlined } from '@ant-design/icons';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 
 const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedIndex, setSearchKeywordFocusedIndex }) => {
     const searchKeywordCardRefs = useRef([]);

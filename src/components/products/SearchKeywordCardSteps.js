@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Row, Col, Space, Empty } from 'antd';
-import Search from 'antd/es/input/Search';
-import SearchKeywordCard from './SearchKeywordCard';
-import { selectWorkingSearchWord } from '../../apis/productsApi';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import Search from 'antd/es/input/Search.js';
+import SearchKeywordCard from './SearchKeywordCard.js';
+import { selectWorkingSearchWord } from '../../apis/productsApi.js';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 
 const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocusedIndex }) => {
     const searchKeywordCardRefs = useRef([]);

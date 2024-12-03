@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MenuComponent from './components/MenuComponent';
+import MenuComponent from './components/MenuComponent.js';
 import { Layout } from 'antd';
-import { Content, Footer, Header } from 'antd/es/layout/layout';
-import Home from './pages/Home';
-import Contact from './pages/Contact';
-import Products from './pages/Products';
+import { Content, Footer, Header } from 'antd/es/layout/layout.js';
+import Home from './pages/Home.js';
+import Contact from './pages/Contact.js';
+import Products from './pages/Products.js';
 
 // router 설정
 // redux, context api, recoil을 이용한 전역 상태 관리

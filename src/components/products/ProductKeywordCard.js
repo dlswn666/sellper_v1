@@ -1,6 +1,6 @@
 import { Card, Image, Space, Row, Col } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import InputComponent from '../InputComponent';
+import InputComponent from '../InputComponent.js';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {

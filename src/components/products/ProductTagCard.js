@@ -1,8 +1,8 @@
 import { Card, Image, Space, Row, Col, Divider } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import InputComponent from '../InputComponent';
+import InputComponent from '../InputComponent.js';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
-import { putProductTag } from '../../apis/productsApi';
+import { putProductTag } from '../../apis/productsApi.js';
 
 const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const [thumbNailUrl, setThumbNailUrl] = useState([]);

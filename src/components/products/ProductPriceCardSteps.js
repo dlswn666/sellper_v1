@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Card, Button, message, Affix, Input, Typography, Tooltip } from 'antd';
-import { SaveOutlined, EditOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import Search from 'antd/es/input/Search';
-import ProductPriceCard from './ProductPriceCard';
-import { getProductPriceData, getProductById, getPlatformPriceById, putPlatformPrice } from '../../apis/productsApi';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
+import { Row, Col, Space, Empty, Card, message, Affix, Typography, Button, Input, Tooltip } from 'antd';
+import { SaveOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import Search from 'antd/es/input/Search.js';
+import ProductPriceCard from './ProductPriceCard.js';
+import { getProductPriceData, getProductById, getPlatformPriceById, putPlatformPrice } from '../../apis/productsApi.js';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 import '../../css/productNameCard.css';
 
 const { Text } = Typography;

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Col, Empty, Row, Space, Tree, Card, Button, Tabs, message, Affix } from 'antd';
-import Search from 'antd/es/input/Search';
+import Search from 'antd/es/input/Search.js';
 import { useEffect, useRef, useState } from 'react';
-import { getCateProduct, getProductById } from '../../apis/productsApi';
-import useInfiniteScroll from '../../hooks/useInfiniteScroll';
-import ProductCategoryCard from './ProductCategoryCard';
-import { useProductCategory } from '../../hooks/useProductCategory';
+import { getCateProduct, getProductById } from '../../apis/productsApi.js';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
+import ProductCategoryCard from './ProductCategoryCard.js';
+import { useProductCategory } from '../../hooks/useProductCategory.js';
 import '../../css/productNameCard.css';
 import '../../css/ProductCategoryCardSteps.css';
 import { SaveOutlined } from '@ant-design/icons';
