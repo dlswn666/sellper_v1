@@ -22,7 +22,6 @@ export const getAccessToken = async () => {
 
 // 카테고리별 속성값 조회
 export const getProductAttributeValues = async (categoryId) => {
-    categoryId = '50003067';
     try {
         const response = await apiNaverCommerce.get(`/naverCommerce/getProductAttributeValues/${categoryId}`);
         const groupedData = response.data.reduce((acc, curr) => {
@@ -40,7 +39,6 @@ export const getProductAttributeValues = async (categoryId) => {
 
 // 카테고리별 속성 조회
 export const getProductAttributes = async (categoryId) => {
-    categoryId = '50003067';
     try {
         const response = await apiNaverCommerce.get(`/naverCommerce/getProductAttributes/${categoryId}`);
         console.log('naver product attributes', response.data);

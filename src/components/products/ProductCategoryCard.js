@@ -56,6 +56,7 @@ const ProductCategoryCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
                 width: '100%',
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
                 position: 'relative',
+                padding: 0,
             }}
             onClick={onCardFocus}
             tabIndex={0}

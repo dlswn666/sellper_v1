@@ -70,6 +70,7 @@ const ProductAttributeCardSteps = () => {
     const onFocusAttributeCard = async (index) => {
         setPrevIndex(index);
         setAttributeFocusedIndex(index);
+        console.log('뭐지?');
         const categoryId = attributeData[index]?.naver_recoCate_id[0];
         const wholesaleProductId = attributeData[index]?.wholesaleProductId;
         console.log('wholesaleProductId', wholesaleProductId);
@@ -153,11 +154,35 @@ const ProductAttributeCardSteps = () => {
                 <Col span={12}>
                     {detailImage?.length > 0 && (
                         <Card title="상품 상세 이미지">
-                            {detailImage.map((item) => (
-                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                    <img src={item?.path} alt="상품 상세 이미지" />
-                                </div>
-                            ))}
+                            <div
+                                style={{
+                                    maxHeight: 'calc(100vh - 200px)',
+                                    overflowY: 'auto',
+                                    position: 'sticky',
+                                    top: '0px',
+                                }}
+                            >
+                                {detailImage.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            marginBottom: '16px',
+                                        }}
+                                    >
+                                        <img
+                                            src={item?.detailImageUrl}
+                                            alt="상품 상세 이미지"
+                                            style={{
+                                                maxWidth: '100%',
+                                                height: 'auto',
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </Card>
                     )}
                 </Col>

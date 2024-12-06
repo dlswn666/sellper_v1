@@ -1,27 +1,39 @@
+.ant-card-body {
+    padding: 20px !important;
+}
+
 .card-container {
     perspective: 1000px;
     width: 100%;
-    height: 100%;
+    /* 일단  */
+    height: 500px;
 }
 
-.card-flipper {
+.card-slider {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: auto;
     transition: transform 0.8s;
     transform-style: preserve-3d;
 }
 
-.card-flipper.flipped {
-    transform: rotateY(180deg);
+.card-slider.slide-0 {
+    transform: translateX(0);
+}
+
+.card-slider.slide-1 {
+    transform: translateX(-100%);
 }
 
 .card-front,
 .card-back {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     backface-visibility: hidden;
+    background: white;
 }
 
 .card-front {
@@ -30,5 +42,116 @@
 
 .card-back {
     transform: rotateY(180deg);
-    background-color: white;
+}
+
+.attribute-container {
+    padding: 24px;
+    width: 100%;
+    height: 100%;
+}
+
+.attribute-field {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.attribute-field h3 {
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.attribute-field .ant-checkbox-group,
+.attribute-field .ant-select {
+    width: 100%;
+}
+
+/* ... existing styles ... */
+
+.card-action-buttons {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    margin-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.card-front .card-action-buttons {
+    margin-top: 20px;
+}
+
+.card-back .attribute-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-back .card-action-buttons {
+    margin-top: auto; /* 버튼을 하단에 고정 */
+}
+
+.product-card {
+    margin-bottom: 16px;
+}
+
+.product-card .ant-carousel {
+    width: 100%;
+}
+
+.product-info-slide,
+.attribute-slide {
+    padding: 20px;
+}
+
+.product-header {
+    display: flex;
+    gap: 16px;
+}
+
+.product-details {
+    flex: 1;
+}
+
+.info-row {
+    margin-bottom: 8px;
+}
+
+.label {
+    font-weight: 500;
+    color: #666;
+}
+
+.value {
+    color: #333;
+}
+
+.attribute-content {
+    padding: 16px 0;
+}
+
+.attribute-field {
+    margin-bottom: 16px;
+}
+
+.attribute-field h3 {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.action-buttons {
+    margin-top: 16px;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 16px;
+}
+
+/* Carousel 애니메이션 커스터마이징 */
+.ant-carousel .slick-slide {
+    transition: all 0.3s ease;
+}
+
+/* 필요한 경우 Carousel 높이 조정 */
+.ant-carousel {
+    min-height: 400px;
 }
