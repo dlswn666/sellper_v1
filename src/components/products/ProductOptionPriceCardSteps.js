@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card, Row, Col, Empty, Affix, Button, Input, Tooltip, Space, Divider, Typography } from 'antd';
-import { SaveOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Empty, Affix, Button, Input, Tooltip, Space, Divider, Typography, Radio } from 'antd';
+import { SaveOutlined, InfoCircleOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import Search from 'antd/es/input/Search.js';
 import { getProductOption } from '../../apis/productsApi.js';
 import ProductOptionPriceCard from './ProductOptionPriceCard.js';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
+import { v4 as uuidv4 } from 'uuid';
+import { postOptionSettings, getOptionSettings } from '../../apis/productsApi.js';
 
 const ProductOptionPriceCardSteps = () => {
     const [searchLoading, setSearchLoading] = useState(false);
@@ -16,6 +18,9 @@ const ProductOptionPriceCardSteps = () => {
     const [productOptionFocusedIndex, setProductOptionFocusedIndex] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [optionEditData, setOptionEditData] = useState({});
+    const [optionRow, setOptionRow] = useState([{ id: uuidv4(), name: '색상', value: '레드' }]);
+    const [optionSettings, setOptionSettings] = useState([]);
+    const [optionType, setOptionType] = useState('single');
 
     const { Text } = Typography;
 
@@ -30,7 +35,7 @@ const ProductOptionPriceCardSteps = () => {
     }, [page]);
 
     useEffect(() => {
-        if (productOptionData?.length > 0) {
+        if (productOptionData && productOptionData.length > 0) {
             initializeFirstCard();
         }
     }, [productOptionData]);
@@ -48,28 +53,99 @@ const ProductOptionPriceCardSteps = () => {
         handleOptionData(index);
     };
 
-    const handleOptionData = (index) => {
+    const handleOptionData = async (index) => {
+        if (!productOptionData || !productOptionData[index]) {
+            setOptionRow([
+                {
+                    id: uuidv4(),
+                    name: '옵션명',
+                    value: '옵션값',
+                    price: 0,
+                },
+            ]);
+            setOptionEditData({
+                marginPercent: 30,
+                optionPrice: '+300, +200, +300',
+            });
+            return;
+        }
+
         const optionData = {
             ...productOptionData[index],
             marginPercent: 30,
         };
+
         // 옵션 가격 임의 설정 test
         optionData.optionPrice = '+300, +200, +300';
         let optionPrice = optionData.optionPrice.split(',');
         optionPrice = optionPrice.map((price) => parseInt(price));
 
         let optionValueJoin = '';
-        //옵션 값 설정
-        optionData.optionProduct.forEach((option, index) => {
-            if (index === optionData.optionProduct.length - 1) {
-                optionValueJoin += `${option.optionValue} : ${parseInt(option.optionPrice)}`;
+
+        // optionProduct가 존재하는 경우에만 처리
+        if (optionData.optionProduct && Array.isArray(optionData.optionProduct)) {
+            //옵션 값 설정
+            optionData.optionProduct.forEach((option, index) => {
+                if (index === optionData.optionProduct.length - 1) {
+                    optionValueJoin += `${option.optionValue} : ${parseInt(option.optionPrice)}`;
+                } else {
+                    optionValueJoin += `${option.optionValue} : ${parseInt(option.optionPrice)}\r\n`;
+                }
+            });
+            optionData.optionValueJoin = optionValueJoin;
+
+            //옵션 설정 정보 조회
+            const productId = productOptionData[index].productId;
+            const wholesaleProductId = productOptionData[index].wholesaleProductId;
+            const createUser = 'sellper';
+            const platform = 'all';
+
+            const param = {
+                productsId: productId,
+                wholesaleProductId: wholesaleProductId,
+                platform: platform,
+                createUser: createUser,
+            };
+
+            const optionSettingsData = await getOptionSettings(param);
+
+            if (optionSettingsData.length > 0) {
+                setOptionRow(optionSettingsData);
             } else {
-                optionValueJoin += `${option.optionValue} : ${parseInt(option.optionPrice)}\r\n`;
+                const optionRowData = optionData.optionProduct.map((option) => ({
+                    id: option.optionId || uuidv4(),
+                    name: option.optionName,
+                    value: option.optionValue,
+                    price: option.optionPrice,
+                    productId: productId,
+                }));
+                setOptionRow(optionRowData);
             }
-        });
-        optionData.optionValueJoin = optionValueJoin;
+        } else {
+            // optionProduct가 없는 경우 기본값 설정
+            setOptionRow([
+                {
+                    id: uuidv4(),
+                    name: '옵션명',
+                    value: '옵션값',
+                    price: 0,
+                },
+            ]);
+        }
 
         setOptionEditData(optionData);
+    };
+
+    const handleAddOptionRow = (flag, id) => {
+        if (flag === 'add') {
+            setOptionRow((prev) => [...prev, { id: uuidv4(), name: '', value: '', price: '' }]);
+        } else {
+            setOptionRow((prev) => prev.filter((item) => item.id !== id));
+        }
+    };
+
+    const handleEditOptionRow = (index, key, value) => {
+        setOptionRow((prev) => prev.map((item) => (item.id === index ? { ...item, [key]: value } : item)));
     };
 
     const handleKeyPress = (e) => {
@@ -108,8 +184,10 @@ const ProductOptionPriceCardSteps = () => {
         }
     };
 
-    const handleSave = (index) => {
-        console.log(index);
+    const handleSave = () => {
+        //옵션 설정 값 가져오기
+        console.log(optionSettings);
+        postOptionSettings(optionSettings);
     };
 
     const handlePriceChange = (index, key, value) => {
@@ -117,6 +195,63 @@ const ProductOptionPriceCardSteps = () => {
             ...prev,
             [key]: value,
         }));
+    };
+
+    const handleApplyOptionRow = () => {
+        if (optionType === 'single') {
+            // 단독 옵션 처리
+            const newOptionSettings = optionRow.flatMap((item) => {
+                return item.value.split(',').map((value) => ({
+                    optionId: uuidv4(),
+                    optionName: item.name,
+                    optionValue: value.trim(),
+                    optionPrice: item.price || 0,
+                    optionStock: item.optionStock || 100,
+                    wholesaleProductId: optionEditData.wholesaleProductId,
+                    productsId: optionEditData.productId,
+                    platform: item.platform ? item.platform : 'all',
+                    createUser: item.createUser ? item.createUser : 'sellper',
+                    updateUser: item.updateUser ? item.updateUser : 'sellper',
+                }));
+            });
+            setOptionSettings(newOptionSettings);
+        } else {
+            // 조합 옵션 처리
+            const optionCombinations = optionRow.map((item) => ({
+                name: item.name,
+                values: item.value.split(',').map((value) => value.trim()),
+            }));
+
+            const generateCombinations = (arr) => {
+                return arr.reduce((acc, current) => {
+                    if (acc.length === 0) {
+                        return current.values.map((value) => [{ name: current.name, value }]);
+                    }
+
+                    return acc.flatMap((combo) =>
+                        current.values.map((value) => [...combo, { name: current.name, value }])
+                    );
+                }, []);
+            };
+
+            const combinations = generateCombinations(optionCombinations);
+
+            const newOptionSettings = combinations.map((combo) => ({
+                optionId: uuidv4(),
+                optionName: combo.map((c) => c.name).join('/'),
+                optionValue: combo.map((c) => c.value).join('/'),
+                optionPrice: 0,
+                optionStock: 100,
+                wholesaleProductId: optionEditData.wholesaleProductId,
+            }));
+
+            setOptionSettings(newOptionSettings);
+        }
+    };
+
+    // 옵션 설정 정보 수정 함수
+    const handleOptionSettingChange = (id, field, value) => {
+        setOptionSettings((prev) => prev.map((option) => (option.id === id ? { ...option, [field]: value } : option)));
     };
 
     return (
@@ -218,7 +353,7 @@ const ProductOptionPriceCardSteps = () => {
                                                         fontSize: '16px',
                                                     }}
                                                 >
-                                                    도매 판매가
+                                                    판매가
                                                 </h2>
                                                 <p
                                                     style={{
@@ -249,17 +384,125 @@ const ProductOptionPriceCardSteps = () => {
                                             key={optionEditData.productOptionId}
                                             size="small"
                                             className="platform-price-card"
-                                            extra={
-                                                <Button
-                                                    type="primary"
-                                                    icon={<SaveOutlined />}
-                                                    size="small"
-                                                    onClick={() => handleSave(productOptionFocusedIndex)}
+                                            actions={[
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'flex-end',
+                                                        marginRight: '16px',
+                                                    }}
                                                 >
-                                                    저장
-                                                </Button>
-                                            }
+                                                    <Button
+                                                        type="primary"
+                                                        icon={<SaveOutlined />}
+                                                        size="small"
+                                                        style={{ width: '100px', height: '40px' }}
+                                                        onClick={() => handleSave(productOptionFocusedIndex)}
+                                                    >
+                                                        저장
+                                                    </Button>
+                                                </div>,
+                                            ]}
                                         >
+                                            <h3>옵션 설정</h3>
+                                            <Row style={{ marginBottom: '16px' }}>
+                                                <Col span={24}>
+                                                    <Radio.Group
+                                                        value={optionType}
+                                                        onChange={(e) => setOptionType(e.target.value)}
+                                                        style={{ marginBottom: '16px' }}
+                                                    >
+                                                        <Radio.Button value="single">단독 옵션</Radio.Button>
+                                                        <Radio.Button value="combination">조합 옵션</Radio.Button>
+                                                    </Radio.Group>
+                                                    <Text type="secondary" style={{ marginLeft: '16px' }}>
+                                                        {optionType === 'single'
+                                                            ? '단독 옵션: 각 옵션값이 독립적으로 생성됩니다.'
+                                                            : '조합 옵션: 입력한 옵션값들의 모든 조합이 생성됩니다.'}
+                                                    </Text>
+                                                </Col>
+                                            </Row>
+                                            {optionRow.map((item) => (
+                                                <Row gutter={[16, 16]} justify="space-between" align="middle">
+                                                    <Col span={10}>
+                                                        <div className="price-input-group">
+                                                            <Text type="secondary">옵션 이름</Text>
+                                                            <Input
+                                                                value={item.name}
+                                                                onChange={(e) => {
+                                                                    handleEditOptionRow(
+                                                                        item.id,
+                                                                        'name',
+                                                                        e.target.value
+                                                                    );
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </Col>
+                                                    <Col span={10}>
+                                                        <div className="price-input-group">
+                                                            <Text type="secondary">옵션 값</Text>
+                                                            <Input
+                                                                value={item.value}
+                                                                onChange={(e) => {
+                                                                    handleEditOptionRow(
+                                                                        item.id,
+                                                                        'value',
+                                                                        e.target.value
+                                                                    );
+                                                                }}
+                                                                addonAfter={
+                                                                    <Tooltip
+                                                                        title={
+                                                                            <>
+                                                                                여러 옵션 있을 경우 &nbsp;&nbsp; <br />
+                                                                                , 로 구분해 주세요 &nbsp;&nbsp; <br />
+                                                                                예) 색상, 사이즈
+                                                                            </>
+                                                                        }
+                                                                    >
+                                                                        <InfoCircleOutlined />
+                                                                    </Tooltip>
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </Col>
+                                                    <Col span={1}>
+                                                        <Button
+                                                            type="primary"
+                                                            icon={<PlusOutlined />}
+                                                            onClick={() => handleAddOptionRow('add')}
+                                                        />
+                                                    </Col>
+                                                    <Col span={1}>
+                                                        <Button
+                                                            type="default"
+                                                            icon={<MinusOutlined />}
+                                                            onClick={() => handleAddOptionRow('remove', item.id)}
+                                                        />
+                                                    </Col>
+                                                </Row>
+                                            ))}
+                                            <Row justify="end">
+                                                <Col
+                                                    span={3}
+                                                    style={{
+                                                        marginTop: '16px',
+                                                        marginBottom: '16px',
+                                                        justifyContent: 'flex-end',
+                                                    }}
+                                                >
+                                                    <Button
+                                                        type="primary"
+                                                        onClick={handleApplyOptionRow}
+                                                        style={{ width: '80px' }}
+                                                    >
+                                                        적용
+                                                    </Button>
+                                                </Col>
+                                            </Row>
+                                            <Divider className="divider" />
+                                            <h3>옵션 마진 설정</h3>
                                             <Row justify="space-between" align="middle" gutter={[16, 16]}>
                                                 <Col span={24}>
                                                     <Row gutter={[16, 16]}>
@@ -298,71 +541,67 @@ const ProductOptionPriceCardSteps = () => {
                                                 </Col>
                                             </Row>
                                             <Divider className="divider" />
-                                            <h3>옵션 설정</h3>
-                                            <Row gutter={[16, 16]} justify="space-between" align="middle">
-                                                <Col span={12}>
-                                                    <div className="price-input-group">
-                                                        <Text type="secondary">옵션 이름</Text>
-                                                        <Input
-                                                            value={optionEditData.optionName}
-                                                            onChange={(e) => {
-                                                                handlePriceChange(
-                                                                    productOptionFocusedIndex,
-                                                                    'optionName',
-                                                                    e.target.value
-                                                                );
-                                                            }}
-                                                            addonAfter={
-                                                                <Tooltip
-                                                                    title={
-                                                                        <>
-                                                                            여러 옵션 있을 경우 &nbsp;&nbsp; <br />
-                                                                            , 로 구분해 주세요 &nbsp;&nbsp; <br />
-                                                                            예) 색상, 사이즈
-                                                                        </>
-                                                                    }
-                                                                >
-                                                                    <InfoCircleOutlined />
-                                                                </Tooltip>
-                                                            }
-                                                        />
-                                                    </div>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <div className="price-input-group">
-                                                        <Text type="secondary">옵션 값</Text>
-                                                        <Input
-                                                            value={optionEditData.optionValueJoin}
-                                                            onChange={(e) => {
-                                                                handlePriceChange(
-                                                                    productOptionFocusedIndex,
-                                                                    'optionValueJoin',
-                                                                    e.target.value
-                                                                );
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </Col>
-                                            </Row>
-                                            <Divider className="divider" />
-                                            <Row>
-                                                <Col span={12}>
-                                                    <div className="price-input-group">
-                                                        <Text type="secondary">옵션 가격</Text>
-                                                        <Input
-                                                            value={optionEditData.optionPrice}
-                                                            onChange={(e) => {
-                                                                handlePriceChange(
-                                                                    productOptionFocusedIndex,
-                                                                    'optionPrice',
-                                                                    e.target.value
-                                                                );
-                                                            }}
-                                                            suffix="원"
-                                                        />
-                                                    </div>
-                                                </Col>
-                                            </Row>
+                                            <h3>옵션 설정 정보</h3>
+                                            <div style={{ marginTop: '16px' }}>
+                                                {optionSettings.length > 0 ? (
+                                                    optionSettings.map((option) => (
+                                                        <Row
+                                                            key={option.optionId}
+                                                            gutter={[16, 16]}
+                                                            align="middle"
+                                                            style={{ marginBottom: '16px' }}
+                                                        >
+                                                            <Col span={5}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">옵션 이름</Text>
+                                                                    <Input value={option.optionName} disabled />
+                                                                </div>
+                                                            </Col>
+                                                            <Col span={7}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">옵션 값</Text>
+                                                                    <Input value={option.optionValue} disabled />
+                                                                </div>
+                                                            </Col>
+                                                            <Col span={6}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">옵션 가격</Text>
+                                                                    <Input
+                                                                        value={parseInt(option.optionPrice)}
+                                                                        onChange={(e) =>
+                                                                            handleOptionSettingChange(
+                                                                                option.optionPrice,
+                                                                                'optionPrice',
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                        suffix="원"
+                                                                        type="number"
+                                                                    />
+                                                                </div>
+                                                            </Col>
+                                                            <Col span={6}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">재고</Text>
+                                                                    <Input
+                                                                        value={option.optionStock}
+                                                                        onChange={(e) =>
+                                                                            handleOptionSettingChange(
+                                                                                option.optionStock,
+                                                                                'optionStock',
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                        type="number"
+                                                                    />
+                                                                </div>
+                                                            </Col>
+                                                        </Row>
+                                                    ))
+                                                ) : (
+                                                    <Empty description="옵션을 적용해주세요" />
+                                                )}
+                                            </div>
                                         </Card>
                                     </Space>
                                 </div>
