@@ -210,3 +210,20 @@ export const getProductDetailImage = async (wholesaleProductId) => {
         throw error;
     }
 };
+
+// 상품 옵션 조회
+export const getProductOption = async (productId, limit = 100, page = 1) => {
+    const offset = (page - 1) * limit;
+    let reqUrl = `/api/getProductOption?limit=${limit}&offset=${offset}`;
+
+    if (productId) {
+        reqUrl += `&productId=${productId}`;
+    }
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response;
+    } catch (error) {
+        console.error('Error fetching product option:', error);
+        throw error;
+    }
+};

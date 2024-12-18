@@ -8,6 +8,7 @@ import ProductTageCardSteps from '../components/products/ProductTagCardSteps.js'
 import ProductCategoryCardSteps from '../components/products/ProductCategoryCardSteps.js';
 import ProductPriceCardSteps from '../components/products/ProductPriceCardSteps.js';
 import ProductAttributeCardSteps from '../components/products/ProductAttributeCardSteps.js';
+import ProductOptionPriceCardSteps from '../components/products/ProductOptionPriceCardSteps.js';
 const Products = () => {
     const initImageGroup = [
         'https://gw.alipayobjects.com/zos/antfincdn/LlvErxo8H9/photo-1503185912284-5271ff81b9a8.webp',
@@ -157,9 +158,14 @@ const Products = () => {
             content: <ProductCategoryCardSteps></ProductCategoryCardSteps>,
         },
         {
-            title: '가격 설정',
+            title: '기본 가격 설정',
             description: '상품명 등록',
             content: <ProductPriceCardSteps></ProductPriceCardSteps>,
+        },
+        {
+            title: '옵션 설정',
+            description: '옵션 설정',
+            content: <ProductOptionPriceCardSteps></ProductOptionPriceCardSteps>,
         },
         {
             title: '상품 주요 정보',

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Card, message, Affix, Typography, Button, Input, Tooltip } from 'antd';
+import { Row, Col, Space, Empty, Card, message, Affix, Typography, Button, Input, Tooltip, Divider } from 'antd';
 import { SaveOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import Search from 'antd/es/input/Search.js';
 import ProductPriceCard from './ProductPriceCard.js';
@@ -72,7 +72,6 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                 const platformPrices = await fetchPlatformPrices(item.workingProductId);
                 item.platformPrices = platformPrices;
             }
-            console.log(result);
 
             if (!isLoadMore) {
                 setSearchData(result);
@@ -269,6 +268,33 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
         return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
+    // 추후 플랫폼별 탭 추가
+    // const renderPlatformPriceTab = () => {
+    //     const platforms = [
+    //         { key: 'naver', label: '네이버', dataKey: 'naver_recoCate' },
+    //         { key: 'gmarket', label: 'G마켓', dataKey: 'B_recoCate' },
+    //         { key: 'C', label: 'C몰', dataKey: 'C_recoCate' },
+    //     ];
+
+    //     const items = platforms.map((platform) => ({
+    //         key: platform.key,
+    //         label: platform.label,
+    //         children: renderPlatformPriceCard(platform.key, platform),
+    //     }));
+
+    //     return <Tabs items={items} />;
+    // };
+
+    // const renderPlatformPriceCard = (platformId, platform) => {
+    //     return (
+    //         <Row>
+    //             <Col span={24}>
+    //                 <div>test</div>
+    //             </Col>
+    //         </Row>
+    //     );
+    // };
+
     return (
         <div style={{ padding: '24px' }}>
             <Row style={{ marginBottom: '16px' }}>
@@ -304,12 +330,20 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                 </Col>
                 <Col span={12}>
                     <Affix offsetTop={24}>
-                        <Card title="가격 설정 정보" onKeyDown={handleKeyPress}>
+                        <Card
+                            title="가격 설정 정보"
+                            onKeyDown={handleKeyPress}
+                            style={{
+                                maxHeight: 'calc(100vh - 200px)',
+                                overflowY: 'auto',
+                                overflowX: 'hidden',
+                            }}
+                        >
                             {searchData.length > 0 ? (
                                 <div>
                                     <div
                                         style={{
-                                            marginBottom: 24,
+                                            marginBottom: 16,
                                             padding: '20px',
                                             background: '#f8f9fa',
                                             borderRadius: '8px',
@@ -327,7 +361,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                 <h2
                                                     style={{
                                                         color: '#1890ff',
-                                                        marginBottom: '8px',
+                                                        marginBottom: '4px',
                                                         fontSize: '16px',
                                                     }}
                                                 >
@@ -347,7 +381,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                             <div
                                                 style={{
                                                     width: '1px',
-                                                    height: '50px',
+                                                    height: '100%',
                                                     background: '#e8e8e8',
                                                     margin: '0 24px',
                                                 }}
@@ -356,7 +390,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                 <h2
                                                     style={{
                                                         color: '#1890ff',
-                                                        marginBottom: '8px',
+                                                        marginBottom: '4px',
                                                         fontSize: '16px',
                                                     }}
                                                 >
@@ -375,11 +409,17 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                             </div>
                                         </div>
                                     </div>
+                                    <Divider className="divider" />
                                     <h3>플랫폼별 판매 가격</h3>
                                     <Space
                                         direction="vertical"
                                         size="middle"
-                                        style={{ display: 'flex', width: '100%' }}
+                                        style={{
+                                            display: 'flex',
+                                            width: '100%',
+                                            minHeight: 'calc(100vh - 200px)',
+                                            overflowY: 'auto',
+                                        }}
                                     >
                                         {platformPrices.map((price, index) => (
                                             <Card
