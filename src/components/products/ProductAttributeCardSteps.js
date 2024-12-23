@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Card } from 'antd';
+import { Row, Col, Space, Empty, Card, Affix, Image } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import ProductAttributeCard from './ProductAttributeCard.js';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 import { getProductAttributeData, getProductDetailImage } from '../../apis/productsApi.js';
-import { getProductAttributeValues, getProductAttributes, getAccessToken } from '../../apis/naverCommerceApi.js';
+import { getProductAttributeValues, getProductAttributes, getOriginAreaInfo } from '../../apis/naverCommerceApi.js';
 
 const ProductAttributeCardSteps = () => {
     const [attributeData, setAttributeData] = useState([]);
@@ -28,6 +28,12 @@ const ProductAttributeCardSteps = () => {
             onSearch(searchTerm, true);
         }
     }, [page]);
+
+    useEffect(() => {
+        if (attributeData && attributeData.length > 0) {
+            initializeFirstCard();
+        }
+    }, [attributeData]);
 
     const initializeFirstCard = () => {
         setTimeout(() => {
@@ -70,10 +76,8 @@ const ProductAttributeCardSteps = () => {
     const onFocusAttributeCard = async (index) => {
         setPrevIndex(index);
         setAttributeFocusedIndex(index);
-        console.log('뭐지?');
         const categoryId = attributeData[index]?.naver_recoCate_id[0];
         const wholesaleProductId = attributeData[index]?.wholesaleProductId;
-        console.log('wholesaleProductId', wholesaleProductId);
 
         // 카테고리 ID
         const naverRecoCateId1 = categoryId.categoryId1;
@@ -152,39 +156,43 @@ const ProductAttributeCardSteps = () => {
                     </Card>
                 </Col>
                 <Col span={12}>
-                    {detailImage?.length > 0 && (
-                        <Card title="상품 상세 이미지">
-                            <div
-                                style={{
-                                    maxHeight: 'calc(100vh - 200px)',
-                                    overflowY: 'auto',
-                                    position: 'sticky',
-                                    top: '0px',
-                                }}
-                            >
-                                {detailImage.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            marginBottom: '16px',
-                                        }}
-                                    >
-                                        <img
-                                            src={item?.detailImageUrl}
-                                            alt="상품 상세 이미지"
+                    <Affix offsetTop={24}>
+                        {detailImage?.length > 0 ? (
+                            <Card title="상품 상세 이미지">
+                                <div
+                                    style={{
+                                        maxHeight: 'calc(100vh - 200px)',
+                                        overflowY: 'auto',
+                                        position: 'sticky',
+                                        top: '0px',
+                                    }}
+                                >
+                                    {detailImage.map((item, index) => (
+                                        <div
+                                            key={index}
                                             style={{
-                                                maxWidth: '100%',
-                                                height: 'auto',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                marginBottom: '16px',
                                             }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                    )}
+                                        >
+                                            <img
+                                                src={item?.detailImageUrl}
+                                                alt="상품 상세 이미지"
+                                                style={{
+                                                    maxWidth: '100%',
+                                                    height: 'auto',
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        ) : (
+                            <Empty description="상품 상세 이미지가 없습니다" />
+                        )}
+                    </Affix>
                 </Col>
             </Row>
         </div>

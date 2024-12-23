@@ -160,6 +160,7 @@ export const getProductPriceData = async (productId = '', search = '', page = 1,
 export const getPlatformPriceById = async (productId) => {
     try {
         const response = await apiProducts.get(`/api/getPlatformPriceById?productId=${productId}`);
+        console.log('response', response);
         return response.data;
     } catch (error) {
         console.error('Error fetching platform price data:', error);
@@ -230,9 +231,10 @@ export const getProductOption = async (productId, limit = 100, page = 1) => {
 
 // 옵션 설정 조회
 export const getOptionSettings = async (data) => {
-    let reqUrl = `/api/getOptionSettings`;
+    const { productsId, wholesaleProductId, platform, createUser } = data;
+    let reqUrl = `/api/getOptionSettings?productsId=${productsId}&wholesaleProductId=${wholesaleProductId}&platform=${platform}&createUser=${createUser}`;
     try {
-        const response = await apiProducts.get(reqUrl, data);
+        const response = await apiProducts.get(reqUrl);
         return response.data;
     } catch (error) {
         console.error('Error fetching option settings:', error);
@@ -243,11 +245,24 @@ export const getOptionSettings = async (data) => {
 // 옵션 설정 저장
 export const postOptionSettings = async (data) => {
     let reqUrl = `/api/postOptionSettings`;
+    console.log('data', data);
     try {
         const response = await apiProducts.post(reqUrl, data);
         return response.data;
     } catch (error) {
         console.error('Error posting option settings:', error);
+        throw error;
+    }
+};
+
+// 배송사 조회
+export const getDeliveryCompanies = async () => {
+    let reqUrl = `/api/getDeliveryCompanies`;
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching delivery companies:', error);
         throw error;
     }
 };

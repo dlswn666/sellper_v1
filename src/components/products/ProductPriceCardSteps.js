@@ -1,5 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Card, message, Affix, Typography, Button, Input, Tooltip, Divider } from 'antd';
+import {
+    Row,
+    Col,
+    Space,
+    Empty,
+    Card,
+    message,
+    Affix,
+    Typography,
+    Button,
+    Input,
+    Tooltip,
+    Divider,
+    InputNumber,
+} from 'antd';
 import { SaveOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import Search from 'antd/es/input/Search.js';
 import ProductPriceCard from './ProductPriceCard.js';
@@ -17,6 +31,12 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
     const [hasMore, setHasMore] = useState(true);
     const [prevIndex, setPrevIndex] = useState(null);
     const [platformPrices, setPlatformPrices] = useState([]);
+    const [naverProductPoint, setNaverProductPoint] = useState({
+        reviewPointText: 0,
+        reviewPointPhoto: 0,
+        reviewPointTextMonth: 0,
+        reviewPointPhotoMonth: 0,
+    });
     const [dailyProfitTarget, setDailyProfitTarget] = useState(33000);
     const [selectedPlatformIndex, setSelectedPlatformIndex] = useState(0);
     const [finalPlatformPrices, setFinalPlatformPrices] = useState(0);
@@ -67,6 +87,8 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
 
         try {
             const result = await getProductPriceData(productId, search, isLoadMore ? page : 1, 100);
+
+            console.log('result', result);
             // 조회 후 개별 가격 조회
             for (const item of result) {
                 const platformPrices = await fetchPlatformPrices(item.workingProductId);
@@ -107,6 +129,12 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                     Number(price.wholesaleProductPrice);
                 price.requiredDailySales =
                     dailyProfitTarget > 0 ? Math.ceil(dailyProfitTarget / price.finalProfitPrice) : 0;
+                if (price.platformId === 'naver' && price.naverProductPoint) {
+                    price.reviewPointText = price.naverProductPoint.reviewPointText;
+                    price.reviewPointPhoto = price.naverProductPoint.reviewPointPhoto;
+                    price.reviewPointTextMonth = price.naverProductPoint.reviewPointTextMonth;
+                    price.reviewPointPhotoMonth = price.naverProductPoint.reviewPointPhotoMonth;
+                }
             });
             return result;
         } catch (error) {
@@ -120,6 +148,16 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
         setProductPriceFocusedIndex(index);
 
         const selectedPlatformPrice = searchData[index].platformPrices[0];
+        if (selectedPlatformPrice.platformId === 'naver' && selectedPlatformPrice.naverProductPoint[0]) {
+            selectedPlatformPrice.reviewPointText = selectedPlatformPrice.naverProductPoint[0].reviewPointText;
+            selectedPlatformPrice.reviewPointPhoto = selectedPlatformPrice.naverProductPoint[0].reviewPointPhoto;
+            selectedPlatformPrice.reviewPointTextMonth =
+                selectedPlatformPrice.naverProductPoint[0].reviewPointTextMonth;
+            selectedPlatformPrice.reviewPointPhotoMonth =
+                selectedPlatformPrice.naverProductPoint[0].reviewPointPhotoMonth;
+        }
+
+        console.log('selectedPlatformPrice', selectedPlatformPrice);
         if (selectedPlatformPrice) {
             setPlatformPrices([selectedPlatformPrice]);
             setTimeout(() => {
@@ -208,8 +246,24 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
 
     const handleSave = async () => {
         if (prevIndex === null || !productPriceCardRefs.current[prevIndex]) return;
-
+        console.log('platformPrices', platformPrices);
         try {
+            for (const item of platformPrices) {
+                if (item.platformId === 'naver') {
+                    item.reviewPointText = item.reviewPointText
+                        ? item.reviewPointText
+                        : naverProductPoint.reviewPointText;
+                    item.reviewPointPhoto = item.reviewPointPhoto
+                        ? item.reviewPointPhoto
+                        : naverProductPoint.reviewPointPhoto;
+                    item.reviewPointTextMonth = item.reviewPointTextMonth
+                        ? item.reviewPointTextMonth
+                        : naverProductPoint.reviewPointTextMonth;
+                    item.reviewPointPhotoMonth = item.reviewPointPhotoMonth
+                        ? item.reviewPointPhotoMonth
+                        : naverProductPoint.reviewPointPhotoMonth;
+                }
+            }
             const result = await putPlatformPrice(platformPrices);
             if (result && result.message === 'success') {
                 message.success('가격 정보가 성공적으로 저장되었습니다.');
@@ -426,16 +480,25 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                 key={price.platformPriceId}
                                                 size="small"
                                                 className="platform-price-card"
-                                                extra={
-                                                    <Button
-                                                        type="primary"
-                                                        icon={<SaveOutlined />}
-                                                        size="small"
-                                                        onClick={() => handleSave(index)}
+                                                actions={[
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'flex-end',
+                                                            marginRight: '16px',
+                                                        }}
                                                     >
-                                                        저장
-                                                    </Button>
-                                                }
+                                                        <Button
+                                                            type="primary"
+                                                            icon={<SaveOutlined />}
+                                                            size="small"
+                                                            style={{ width: '100px', height: '40px' }}
+                                                            onClick={() => handleSave(index)}
+                                                        >
+                                                            저장
+                                                        </Button>
+                                                    </div>,
+                                                ]}
                                             >
                                                 <Row justify="space-between" align="middle" gutter={[16, 16]}>
                                                     <Col span={24}>
@@ -657,6 +720,94 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                                             <Tooltip title="일일 목표 순이익 달성을 위해 필요한 판매 수량입니다">
                                                                                 <InfoCircleOutlined />
                                                                             </Tooltip>
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </Col>
+                                                        </Row>
+                                                        <Divider className="divider" />
+                                                        <h4>포인트 설정</h4>
+                                                        <Row gutter={[16, 16]}>
+                                                            <Col span={12}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">텍스트 리뷰 작성</Text>
+                                                                    <InputNumber
+                                                                        value={
+                                                                            price.reviewPointText
+                                                                                ? price.reviewPointText
+                                                                                : 0
+                                                                        }
+                                                                        style={{ width: '100%' }}
+                                                                        onChange={(value) =>
+                                                                            handlePriceChange(
+                                                                                index,
+                                                                                'reviewPointText',
+                                                                                value
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">포토/동영상 리뷰 작성</Text>
+                                                                    <InputNumber
+                                                                        value={
+                                                                            price.reviewPointPhoto
+                                                                                ? price.reviewPointPhoto
+                                                                                : 0
+                                                                        }
+                                                                        style={{ width: '100%' }}
+                                                                        onChange={(value) =>
+                                                                            handlePriceChange(
+                                                                                index,
+                                                                                'reviewPointPhoto',
+                                                                                value
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">
+                                                                        한달사용 텍스트 리뷰 작성
+                                                                    </Text>
+                                                                    <InputNumber
+                                                                        value={
+                                                                            price.reviewPointTextMonth
+                                                                                ? price.reviewPointTextMonth
+                                                                                : 0
+                                                                        }
+                                                                        style={{ width: '100%' }}
+                                                                        onChange={(value) =>
+                                                                            handlePriceChange(
+                                                                                index,
+                                                                                'reviewPointTextMonth',
+                                                                                value
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </Col>
+                                                            <Col span={12}>
+                                                                <div className="price-input-group">
+                                                                    <Text type="secondary">
+                                                                        한달사용 포토/동영상 리뷰 작성
+                                                                    </Text>
+                                                                    <InputNumber
+                                                                        value={
+                                                                            price.reviewPointPhotoMonth
+                                                                                ? price.reviewPointPhotoMonth
+                                                                                : 0
+                                                                        }
+                                                                        style={{ width: '100%' }}
+                                                                        onChange={(value) =>
+                                                                            handlePriceChange(
+                                                                                index,
+                                                                                'reviewPointPhotoMonth',
+                                                                                value
+                                                                            )
                                                                         }
                                                                     />
                                                                 </div>

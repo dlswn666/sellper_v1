@@ -48,3 +48,15 @@ export const getProductAttributes = async (categoryId) => {
         throw error;
     }
 };
+
+// 원산지 조회
+export const getOriginAreaInfo = async () => {
+    try {
+        const response = await apiNaverCommerce.get('/naverCommerce/getOriginAreaInfo');
+        console.log('naver origin area info', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Naver origin area info error', error);
+        throw error;
+    }
+};

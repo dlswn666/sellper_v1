@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card, Row, Col, Empty, Affix, Button, Input, Tooltip, Space, Divider, Typography, Radio } from 'antd';
+import { Card, Row, Col, Empty, Affix, Button, Input, Tooltip, Space, Divider, Typography, Radio, message } from 'antd';
 import { SaveOutlined, InfoCircleOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import Search from 'antd/es/input/Search.js';
 import { getProductOption } from '../../apis/productsApi.js';
@@ -18,7 +18,7 @@ const ProductOptionPriceCardSteps = () => {
     const [productOptionFocusedIndex, setProductOptionFocusedIndex] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [optionEditData, setOptionEditData] = useState({});
-    const [optionRow, setOptionRow] = useState([{ id: uuidv4(), name: '색상', value: '레드' }]);
+    const [optionRow, setOptionRow] = useState([{ optionId: uuidv4(), optionName: '색상', optionValue: '레드' }]);
     const [optionSettings, setOptionSettings] = useState([]);
     const [optionType, setOptionType] = useState('single');
 
@@ -51,16 +51,18 @@ const ProductOptionPriceCardSteps = () => {
         setPrevIndex(index);
         setProductOptionFocusedIndex(index);
         handleOptionData(index);
+        setOptionType('single');
+        setOptionSettings([]);
     };
 
     const handleOptionData = async (index) => {
         if (!productOptionData || !productOptionData[index]) {
             setOptionRow([
                 {
-                    id: uuidv4(),
-                    name: '옵션명',
-                    value: '옵션값',
-                    price: 0,
+                    optionId: uuidv4(),
+                    optionName: '옵션명',
+                    optionValue: '옵션값',
+                    optionPrice: 0,
                 },
             ]);
             setOptionEditData({
@@ -84,6 +86,7 @@ const ProductOptionPriceCardSteps = () => {
 
         // optionProduct가 존재하는 경우에만 처리
         if (optionData.optionProduct && Array.isArray(optionData.optionProduct)) {
+            console.log('optionData', optionData);
             //옵션 값 설정
             optionData.optionProduct.forEach((option, index) => {
                 if (index === optionData.optionProduct.length - 1) {
@@ -106,17 +109,48 @@ const ProductOptionPriceCardSteps = () => {
                 platform: platform,
                 createUser: createUser,
             };
-
             const optionSettingsData = await getOptionSettings(param);
 
             if (optionSettingsData.length > 0) {
-                setOptionRow(optionSettingsData);
+                if (optionSettingsData[0].optionType === 'single') {
+                    const optionRowData = optionSettingsData.reduce((acc, option) => {
+                        const existingOption = acc.find((o) => o.optionName === option.optionName);
+                        console.log('existingOption', existingOption);
+                        if (existingOption) {
+                            existingOption.optionValue += `,${option.optionValue}`;
+                        } else {
+                            acc.push(option);
+                        }
+                        return acc;
+                    }, []);
+                    setOptionRow(optionRowData);
+                } else if (optionSettingsData[0].optionType === 'combination') {
+                    const combinationOption = [];
+                    const optionNameArry = optionSettingsData[0].optionName.split('/');
+                    for (let i = 0; i < optionNameArry.length; i++) {
+                        const optionValueArry = [];
+                        optionSettingsData.forEach((option) => {
+                            optionValueArry.push(option.optionValue.split('/')[i]);
+                        });
+                        //optionValueArry 중복 제거
+                        const uniqueOptionValueArry = optionValueArry.filter(
+                            (value, index, self) => self.indexOf(value) === index
+                        );
+                        combinationOption.push({
+                            optionName: optionNameArry[i],
+                            optionValue: uniqueOptionValueArry,
+                        });
+                    }
+                    console.log('combinationOption', combinationOption);
+                    setOptionRow(combinationOption);
+                }
+                console.log('optionSettingsData', optionSettingsData);
             } else {
                 const optionRowData = optionData.optionProduct.map((option) => ({
-                    id: option.optionId || uuidv4(),
-                    name: option.optionName,
-                    value: option.optionValue,
-                    price: option.optionPrice,
+                    optionId: option.optionId || uuidv4(),
+                    optionName: option.optionName,
+                    optionValue: option.optionValue,
+                    optionPrice: option.optionPrice,
                     productId: productId,
                 }));
                 setOptionRow(optionRowData);
@@ -125,10 +159,10 @@ const ProductOptionPriceCardSteps = () => {
             // optionProduct가 없는 경우 기본값 설정
             setOptionRow([
                 {
-                    id: uuidv4(),
-                    name: '옵션명',
-                    value: '옵션값',
-                    price: 0,
+                    optionId: uuidv4(),
+                    optionName: '옵션명',
+                    optionValue: '옵션값',
+                    optionPrice: 0,
                 },
             ]);
         }
@@ -136,16 +170,26 @@ const ProductOptionPriceCardSteps = () => {
         setOptionEditData(optionData);
     };
 
-    const handleAddOptionRow = (flag, id) => {
+    const handleAddOptionRow = (flag, optionId) => {
         if (flag === 'add') {
-            setOptionRow((prev) => [...prev, { id: uuidv4(), name: '', value: '', price: '' }]);
-        } else {
-            setOptionRow((prev) => prev.filter((item) => item.id !== id));
+            setOptionRow((prev) => [
+                ...prev,
+                {
+                    optionId: uuidv4(),
+                    optionName: '',
+                    optionValue: '',
+                    optionPrice: 0,
+                    optionStock: 100,
+                },
+            ]);
+        } else if (flag === 'remove') {
+            // optionId가 일치하는 항목 제거
+            setOptionRow((prev) => prev.filter((item) => item.optionId !== optionId));
         }
     };
 
     const handleEditOptionRow = (index, key, value) => {
-        setOptionRow((prev) => prev.map((item) => (item.id === index ? { ...item, [key]: value } : item)));
+        setOptionRow((prev) => prev.map((item) => (item.optionId === index ? { ...item, [key]: value } : item)));
     };
 
     const handleKeyPress = (e) => {
@@ -184,10 +228,20 @@ const ProductOptionPriceCardSteps = () => {
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         //옵션 설정 값 가져오기
         console.log(optionSettings);
-        postOptionSettings(optionSettings);
+        //optionSettings에 optionType 추가
+        optionSettings.forEach((option) => {
+            option.optionPrice = parseInt(option.optionPrice);
+            option.optionType = optionType;
+        });
+        const result = await postOptionSettings(optionSettings);
+        if (result.success) {
+            message.success(result.message);
+        } else {
+            message.error(result.message);
+        }
     };
 
     const handlePriceChange = (index, key, value) => {
@@ -201,35 +255,50 @@ const ProductOptionPriceCardSteps = () => {
         if (optionType === 'single') {
             // 단독 옵션 처리
             const newOptionSettings = optionRow.flatMap((item) => {
-                return item.value.split(',').map((value) => ({
+                // optionValue가 존재하는 경우에만 split 실행
+                const values = Array.isArray(item.optionValue)
+                    ? item.optionValue
+                    : item.optionValue
+                      ? item.optionValue.split(',')
+                      : [];
+                return values.map((value) => ({
                     optionId: uuidv4(),
-                    optionName: item.name,
+                    optionName: item.optionName || '',
                     optionValue: value.trim(),
-                    optionPrice: item.price || 0,
+                    optionPrice: item.optionPrice || 0,
                     optionStock: item.optionStock || 100,
-                    wholesaleProductId: optionEditData.wholesaleProductId,
-                    productsId: optionEditData.productId,
-                    platform: item.platform ? item.platform : 'all',
-                    createUser: item.createUser ? item.createUser : 'sellper',
-                    updateUser: item.updateUser ? item.updateUser : 'sellper',
+                    wholesaleProductId: optionEditData?.wholesaleProductId,
+                    productsId: optionEditData?.productId,
+                    platform: 'all',
+                    createUser: 'sellper',
+                    updateUser: 'sellper',
                 }));
             });
             setOptionSettings(newOptionSettings);
         } else {
             // 조합 옵션 처리
-            const optionCombinations = optionRow.map((item) => ({
-                name: item.name,
-                values: item.value.split(',').map((value) => value.trim()),
-            }));
+            const optionCombinations = optionRow
+                .map((item) => ({
+                    optionName: item.optionName || '',
+                    optionValues: item.optionValue ? item.optionValue.split(',').map((v) => v.trim()) : [],
+                }))
+                .filter((item) => item.optionValues.length > 0);
 
             const generateCombinations = (arr) => {
+                if (arr.length === 0) return [];
+
                 return arr.reduce((acc, current) => {
                     if (acc.length === 0) {
-                        return current.values.map((value) => [{ name: current.name, value }]);
+                        return current.optionValues.map((value) => [
+                            { optionName: current.optionName, optionValue: value },
+                        ]);
                     }
 
                     return acc.flatMap((combo) =>
-                        current.values.map((value) => [...combo, { name: current.name, value }])
+                        current.optionValues.map((value) => [
+                            ...combo,
+                            { optionName: current.optionName, optionValue: value },
+                        ])
                     );
                 }, []);
             };
@@ -238,11 +307,14 @@ const ProductOptionPriceCardSteps = () => {
 
             const newOptionSettings = combinations.map((combo) => ({
                 optionId: uuidv4(),
-                optionName: combo.map((c) => c.name).join('/'),
-                optionValue: combo.map((c) => c.value).join('/'),
+                optionName: combo.map((c) => c.optionName).join('/'),
+                optionValue: combo.map((c) => c.optionValue).join('/'),
                 optionPrice: 0,
                 optionStock: 100,
-                wholesaleProductId: optionEditData.wholesaleProductId,
+                productsId: optionEditData?.productId,
+                wholesaleProductId: optionEditData?.wholesaleProductId,
+                platform: 'all',
+                createUser: 'sellper',
             }));
 
             setOptionSettings(newOptionSettings);
@@ -250,8 +322,10 @@ const ProductOptionPriceCardSteps = () => {
     };
 
     // 옵션 설정 정보 수정 함수
-    const handleOptionSettingChange = (id, field, value) => {
-        setOptionSettings((prev) => prev.map((option) => (option.id === id ? { ...option, [field]: value } : option)));
+    const handleOptionSettingChange = (optionId, field, value) => {
+        setOptionSettings((prev) =>
+            prev.map((option) => (option.optionId === optionId ? { ...option, [field]: value } : option))
+        );
     };
 
     return (
@@ -423,19 +497,24 @@ const ProductOptionPriceCardSteps = () => {
                                                 </Col>
                                             </Row>
                                             {optionRow.map((item) => (
-                                                <Row gutter={[16, 16]} justify="space-between" align="middle">
+                                                <Row
+                                                    key={item.optionId}
+                                                    gutter={[16, 16]}
+                                                    justify="space-between"
+                                                    align="middle"
+                                                >
                                                     <Col span={10}>
                                                         <div className="price-input-group">
                                                             <Text type="secondary">옵션 이름</Text>
                                                             <Input
-                                                                value={item.name}
-                                                                onChange={(e) => {
+                                                                value={item.optionName}
+                                                                onChange={(e) =>
                                                                     handleEditOptionRow(
-                                                                        item.id,
-                                                                        'name',
+                                                                        item.optionId,
+                                                                        'optionName',
                                                                         e.target.value
-                                                                    );
-                                                                }}
+                                                                    )
+                                                                }
                                                             />
                                                         </div>
                                                     </Col>
@@ -443,14 +522,14 @@ const ProductOptionPriceCardSteps = () => {
                                                         <div className="price-input-group">
                                                             <Text type="secondary">옵션 값</Text>
                                                             <Input
-                                                                value={item.value}
-                                                                onChange={(e) => {
+                                                                value={item.optionValue}
+                                                                onChange={(e) =>
                                                                     handleEditOptionRow(
-                                                                        item.id,
-                                                                        'value',
+                                                                        item.optionId,
+                                                                        'optionValue',
                                                                         e.target.value
-                                                                    );
-                                                                }}
+                                                                    )
+                                                                }
                                                                 addonAfter={
                                                                     <Tooltip
                                                                         title={
@@ -467,19 +546,22 @@ const ProductOptionPriceCardSteps = () => {
                                                             />
                                                         </div>
                                                     </Col>
-                                                    <Col span={1}>
-                                                        <Button
-                                                            type="primary"
-                                                            icon={<PlusOutlined />}
-                                                            onClick={() => handleAddOptionRow('add')}
-                                                        />
-                                                    </Col>
-                                                    <Col span={1}>
-                                                        <Button
-                                                            type="default"
-                                                            icon={<MinusOutlined />}
-                                                            onClick={() => handleAddOptionRow('remove', item.id)}
-                                                        />
+                                                    <Col span={2}>
+                                                        <Space>
+                                                            <Button
+                                                                type="primary"
+                                                                icon={<PlusOutlined />}
+                                                                onClick={() => handleAddOptionRow('add')}
+                                                            />
+                                                            <Button
+                                                                type="default"
+                                                                icon={<MinusOutlined />}
+                                                                onClick={() =>
+                                                                    handleAddOptionRow('remove', item.optionId)
+                                                                }
+                                                                disabled={optionRow.length === 1}
+                                                            />
+                                                        </Space>
                                                     </Col>
                                                 </Row>
                                             ))}
@@ -567,10 +649,10 @@ const ProductOptionPriceCardSteps = () => {
                                                                 <div className="price-input-group">
                                                                     <Text type="secondary">옵션 가격</Text>
                                                                     <Input
-                                                                        value={parseInt(option.optionPrice)}
+                                                                        value={option.optionPrice}
                                                                         onChange={(e) =>
                                                                             handleOptionSettingChange(
-                                                                                option.optionPrice,
+                                                                                option.optionId,
                                                                                 'optionPrice',
                                                                                 e.target.value
                                                                             )
@@ -587,7 +669,7 @@ const ProductOptionPriceCardSteps = () => {
                                                                         value={option.optionStock}
                                                                         onChange={(e) =>
                                                                             handleOptionSettingChange(
-                                                                                option.optionStock,
+                                                                                option.optionId,
                                                                                 'optionStock',
                                                                                 e.target.value
                                                                             )
