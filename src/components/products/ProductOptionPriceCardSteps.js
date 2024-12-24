@@ -110,12 +110,13 @@ const ProductOptionPriceCardSteps = () => {
                 createUser: createUser,
             };
             const optionSettingsData = await getOptionSettings(param);
+            console.log('optionSettingsData', optionSettingsData);
 
             if (optionSettingsData.length > 0) {
                 if (optionSettingsData[0].optionType === 'single') {
+                    setOptionType('single');
                     const optionRowData = optionSettingsData.reduce((acc, option) => {
                         const existingOption = acc.find((o) => o.optionName === option.optionName);
-                        console.log('existingOption', existingOption);
                         if (existingOption) {
                             existingOption.optionValue += `,${option.optionValue}`;
                         } else {
@@ -125,23 +126,27 @@ const ProductOptionPriceCardSteps = () => {
                     }, []);
                     setOptionRow(optionRowData);
                 } else if (optionSettingsData[0].optionType === 'combination') {
+                    setOptionType('combination');
                     const combinationOption = [];
                     const optionNameArry = optionSettingsData[0].optionName.split('/');
                     for (let i = 0; i < optionNameArry.length; i++) {
                         const optionValueArry = [];
                         optionSettingsData.forEach((option) => {
+                            console.log('option', option);
                             optionValueArry.push(option.optionValue.split('/')[i]);
                         });
                         //optionValueArry 중복 제거
                         const uniqueOptionValueArry = optionValueArry.filter(
                             (value, index, self) => self.indexOf(value) === index
                         );
+
                         combinationOption.push({
+                            optionId: uuidv4(),
                             optionName: optionNameArry[i],
-                            optionValue: uniqueOptionValueArry,
+                            optionValue: uniqueOptionValueArry.join(','),
+                            optionPrice: 0,
                         });
                     }
-                    console.log('combinationOption', combinationOption);
                     setOptionRow(combinationOption);
                 }
                 console.log('optionSettingsData', optionSettingsData);
@@ -253,6 +258,7 @@ const ProductOptionPriceCardSteps = () => {
 
     const handleApplyOptionRow = () => {
         if (optionType === 'single') {
+            console.log('optionRow', optionRow);
             // 단독 옵션 처리
             const newOptionSettings = optionRow.flatMap((item) => {
                 // optionValue가 존재하는 경우에만 split 실행
@@ -277,17 +283,26 @@ const ProductOptionPriceCardSteps = () => {
             setOptionSettings(newOptionSettings);
         } else {
             // 조합 옵션 처리
+            console.log('optionRow', optionRow);
             const optionCombinations = optionRow
                 .map((item) => ({
                     optionName: item.optionName || '',
-                    optionValues: item.optionValue ? item.optionValue.split(',').map((v) => v.trim()) : [],
+                    optionValues: item.optionValue
+                        ? item.optionValue.length > 0
+                            ? item.optionValue.split(',')
+                            : []
+                        : [],
                 }))
                 .filter((item) => item.optionValues.length > 0);
+
+            console.log('optionCombinations', optionCombinations);
 
             const generateCombinations = (arr) => {
                 if (arr.length === 0) return [];
 
                 return arr.reduce((acc, current) => {
+                    console.log('acc', acc);
+                    console.log('current', current);
                     if (acc.length === 0) {
                         return current.optionValues.map((value) => [
                             { optionName: current.optionName, optionValue: value },
