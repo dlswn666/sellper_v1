@@ -39,7 +39,6 @@ const ProductCategoryCardSteps = () => {
 
     useEffect(() => {
         if (recommendedSelectedCategory) {
-            console.log('recommendedSelectedCategory', recommendedSelectedCategory);
             const categoryPath = [
                 recommendedSelectedCategory.categoryNm1,
                 recommendedSelectedCategory.categoryNm2,
@@ -150,8 +149,6 @@ const ProductCategoryCardSteps = () => {
                 platformId: activeTab,
             };
 
-            console.log('categoryData', categoryData);
-
             const response = await putProductCategory(categoryData);
 
             if (response.result) {
@@ -183,7 +180,6 @@ const ProductCategoryCardSteps = () => {
 
                 // 현재 인덱스의 데이터를 업데이트된 데이터로 교체
                 newSearchData[productCategoryFocusedIndex] = updatedItem;
-                console.log('newSearchData', newSearchData);
 
                 // 업데이트된 상품을 배열 맨 뒤로 이동
                 const [movedItem] = newSearchData.splice(productCategoryFocusedIndex, 1);

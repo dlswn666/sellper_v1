@@ -86,7 +86,6 @@ const ProductOptionPriceCardSteps = () => {
 
         // optionProduct가 존재하는 경우에만 처리
         if (optionData.optionProduct && Array.isArray(optionData.optionProduct)) {
-            console.log('optionData', optionData);
             //옵션 값 설정
             optionData.optionProduct.forEach((option, index) => {
                 if (index === optionData.optionProduct.length - 1) {
@@ -110,7 +109,6 @@ const ProductOptionPriceCardSteps = () => {
                 createUser: createUser,
             };
             const optionSettingsData = await getOptionSettings(param);
-            console.log('optionSettingsData', optionSettingsData);
 
             if (optionSettingsData.length > 0) {
                 if (optionSettingsData[0].optionType === 'single') {
@@ -132,7 +130,6 @@ const ProductOptionPriceCardSteps = () => {
                     for (let i = 0; i < optionNameArry.length; i++) {
                         const optionValueArry = [];
                         optionSettingsData.forEach((option) => {
-                            console.log('option', option);
                             optionValueArry.push(option.optionValue.split('/')[i]);
                         });
                         //optionValueArry 중복 제거
@@ -149,7 +146,6 @@ const ProductOptionPriceCardSteps = () => {
                     }
                     setOptionRow(combinationOption);
                 }
-                console.log('optionSettingsData', optionSettingsData);
             } else {
                 const optionRowData = optionData.optionProduct.map((option) => ({
                     optionId: option.optionId || uuidv4(),
@@ -216,7 +212,6 @@ const ProductOptionPriceCardSteps = () => {
         setSearchLoading(true);
         try {
             const response = await getProductOption(productId, 100, isLoadMore ? page : 1);
-            console.log(response);
             if (!isLoadMore) {
                 setProductOptionData(response.data);
                 setProductOptionFocusedIndex(0);
@@ -235,7 +230,6 @@ const ProductOptionPriceCardSteps = () => {
 
     const handleSave = async () => {
         //옵션 설정 값 가져오기
-        console.log(optionSettings);
         //optionSettings에 optionType 추가
         optionSettings.forEach((option) => {
             option.optionPrice = parseInt(option.optionPrice);
@@ -258,7 +252,6 @@ const ProductOptionPriceCardSteps = () => {
 
     const handleApplyOptionRow = () => {
         if (optionType === 'single') {
-            console.log('optionRow', optionRow);
             // 단독 옵션 처리
             const newOptionSettings = optionRow.flatMap((item) => {
                 // optionValue가 존재하는 경우에만 split 실행
@@ -283,7 +276,6 @@ const ProductOptionPriceCardSteps = () => {
             setOptionSettings(newOptionSettings);
         } else {
             // 조합 옵션 처리
-            console.log('optionRow', optionRow);
             const optionCombinations = optionRow
                 .map((item) => ({
                     optionName: item.optionName || '',
@@ -295,14 +287,10 @@ const ProductOptionPriceCardSteps = () => {
                 }))
                 .filter((item) => item.optionValues.length > 0);
 
-            console.log('optionCombinations', optionCombinations);
-
             const generateCombinations = (arr) => {
                 if (arr.length === 0) return [];
 
                 return arr.reduce((acc, current) => {
-                    console.log('acc', acc);
-                    console.log('current', current);
                     if (acc.length === 0) {
                         return current.optionValues.map((value) => [
                             { optionName: current.optionName, optionValue: value },

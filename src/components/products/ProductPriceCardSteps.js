@@ -88,7 +88,6 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
         try {
             const result = await getProductPriceData(productId, search, isLoadMore ? page : 1, 100);
 
-            console.log('result', result);
             // 조회 후 개별 가격 조회
             for (const item of result) {
                 const platformPrices = await fetchPlatformPrices(item.workingProductId);
@@ -156,8 +155,6 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
             selectedPlatformPrice.reviewPointPhotoMonth =
                 selectedPlatformPrice.naverProductPoint[0].reviewPointPhotoMonth;
         }
-
-        console.log('selectedPlatformPrice', selectedPlatformPrice);
         if (selectedPlatformPrice) {
             setPlatformPrices([selectedPlatformPrice]);
             setTimeout(() => {
@@ -246,7 +243,6 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
 
     const handleSave = async () => {
         if (prevIndex === null || !productPriceCardRefs.current[prevIndex]) return;
-        console.log('platformPrices', platformPrices);
         try {
             for (const item of platformPrices) {
                 if (item.platformId === 'naver') {

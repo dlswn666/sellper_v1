@@ -4,7 +4,12 @@ import Search from 'antd/es/input/Search.js';
 import ProductAttributeCard from './ProductAttributeCard.js';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 import { getProductAttributeData, getProductDetailImage } from '../../apis/productsApi.js';
-import { getProductAttributeValues, getProductAttributes, getOriginAreaInfo } from '../../apis/naverCommerceApi.js';
+import {
+    getProductAttributeValues,
+    getProductAttributes,
+    getNaverCategory,
+    getNaverProductForProvidedNotice,
+} from '../../apis/naverCommerceApi.js';
 
 const ProductAttributeCardSteps = () => {
     const [attributeData, setAttributeData] = useState([]);
@@ -18,6 +23,9 @@ const ProductAttributeCardSteps = () => {
     const [attributes, setAttributes] = useState([]);
     const [attributeValues, setAttributeValues] = useState([]);
     const [detailImage, setDetailImage] = useState([]);
+    const [naverCategory, setNaverCategory] = useState([]);
+    const [flippedCardIndex, setFlippedCardIndex] = useState(null);
+    const [categoryCache, setCategoryCache] = useState({});
 
     useEffect(() => {
         onSearch();
@@ -56,7 +64,6 @@ const ProductAttributeCardSteps = () => {
 
         try {
             const result = await getProductAttributeData(productId, search, isLoadMore ? page : 1, 100);
-            console.log(result);
             if (!isLoadMore) {
                 setAttributeData(result);
                 setAttributeFocusedIndex(0);
@@ -74,10 +81,15 @@ const ProductAttributeCardSteps = () => {
     };
 
     const onFocusAttributeCard = async (index) => {
+        if (index === prevIndex) return;
+
         setPrevIndex(index);
         setAttributeFocusedIndex(index);
+
         const categoryId = attributeData[index]?.naver_recoCate_id[0];
         const wholesaleProductId = attributeData[index]?.wholesaleProductId;
+        // const naverProductForProvidedNotice = await getNaverProductForProvidedNotice(categoryId);
+        // console.log('naverProductForProvidedNotice', naverProductForProvidedNotice);
 
         // 카테고리 ID
         const naverRecoCateId1 = categoryId.categoryId1;
@@ -85,39 +97,57 @@ const ProductAttributeCardSteps = () => {
         const naverRecoCateId3 = categoryId.categoryId3;
         const naverRecoCateId4 = categoryId.categoryId4;
         const naverRecoCateId5 = categoryId.categoryId5;
-        let lastCategoryId = '';
-        switch (true) {
-            case naverRecoCateId5 && naverRecoCateId5 !== '':
-                lastCategoryId = naverRecoCateId5;
-                break;
-            case naverRecoCateId4 && naverRecoCateId4 !== '':
-                lastCategoryId = naverRecoCateId4;
-                break;
-            case naverRecoCateId3 && naverRecoCateId3 !== '':
-                lastCategoryId = naverRecoCateId3;
-                break;
-            case naverRecoCateId2 && naverRecoCateId2 !== '':
-                lastCategoryId = naverRecoCateId2;
-                break;
-            case naverRecoCateId1 && naverRecoCateId1 !== '':
-                lastCategoryId = naverRecoCateId1;
-                break;
-        }
-        if (lastCategoryId) {
-            try {
-                const attribute = await getProductAttributes(lastCategoryId);
-                const attributeValues = await getProductAttributeValues(lastCategoryId);
 
-                setAttributes(attribute);
+        const naverProductForProvidedNotice = await getNaverProductForProvidedNotice(naverRecoCateId1);
+
+        let lastCategoryId =
+            naverRecoCateId5 || naverRecoCateId4 || naverRecoCateId3 || naverRecoCateId2 || naverRecoCateId1 || '';
+        if (lastCategoryId) {
+            if (categoryCache[lastCategoryId]) {
+                const { attributes, attributeValues, naverCategory } = categoryCache[lastCategoryId];
+                setAttributes(attributes);
                 setAttributeValues(attributeValues);
-            } catch (error) {
-                console.error('Error fetching attributes:', error);
+                setNaverCategory(naverCategory);
+            } else {
+                try {
+                    const [attribute, attributeValues, naverProductForProvidedNotice, getNaverCategoryData] =
+                        await Promise.all([
+                            getProductAttributes(lastCategoryId),
+                            getProductAttributeValues(lastCategoryId),
+                            getNaverProductForProvidedNotice(naverRecoCateId1),
+                            getNaverCategory(lastCategoryId),
+                        ]);
+
+                    setCategoryCache((prev) => ({
+                        ...prev,
+                        [lastCategoryId]: {
+                            attributes: attribute,
+                            attributeValues,
+                            naverCategory: getNaverCategoryData,
+                        },
+                    }));
+
+                    setAttributes(attribute);
+                    setAttributeValues(attributeValues);
+                    setNaverCategory(getNaverCategoryData);
+                } catch (error) {
+                    console.error('Error fetching attributes:', error);
+                }
             }
         }
+
         if (wholesaleProductId) {
-            const detailImage = await getProductDetailImage(wholesaleProductId);
-            setDetailImage(detailImage);
+            try {
+                const detailImage = await getProductDetailImage(wholesaleProductId);
+                setDetailImage(detailImage);
+            } catch (error) {
+                console.error('Error fetching detail image:', error);
+            }
         }
+    };
+
+    const handleCardFlip = (index) => {
+        setFlippedCardIndex(index);
     };
 
     return (
@@ -147,6 +177,9 @@ const ProductAttributeCardSteps = () => {
                                         onCardFocus={() => onFocusAttributeCard(index)}
                                         attributeValues={attributeValues}
                                         attributes={attributes}
+                                        naverCategory={naverCategory}
+                                        isFlipped={index === flippedCardIndex}
+                                        onFlip={() => handleCardFlip(index)}
                                     />
                                 ))
                             ) : (

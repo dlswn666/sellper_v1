@@ -163,3 +163,22 @@
     border-radius: 8px;
     box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 8px;
 }
+
+.attribute-input-group {
+    margin-bottom: 12px;
+}
+
+.attribute-input-group .ant-typography {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.attribute-input-group .ant-input-affix-wrapper {
+    border-radius: 4px;
+}
+
+.attribute-input-group .ant-input-disabled {
+    background-color: #f5f5f5;
+    color: rgba(0, 0, 0, 0.65);
+}

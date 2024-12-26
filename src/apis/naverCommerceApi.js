@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const timestamp = Date.now();
 
 const apiNaverCommerce = axios.create({
@@ -12,7 +11,6 @@ const apiNaverCommerce = axios.create({
 export const getAccessToken = async () => {
     try {
         const response = await apiNaverCommerce.post('/naverCommerce/getAccessToken');
-        console.log(response.data);
         return response.data;
     } catch (error) {
         console.error('Naver access token error', error);
@@ -29,7 +27,6 @@ export const getProductAttributeValues = async (categoryId) => {
             acc[curr.attributeSeq].push(curr);
             return acc;
         }, {});
-        console.log('naver product attribute values groupedData', groupedData);
         return groupedData;
     } catch (error) {
         console.error('Naver product attribute values error', error);
@@ -41,7 +38,6 @@ export const getProductAttributeValues = async (categoryId) => {
 export const getProductAttributes = async (categoryId) => {
     try {
         const response = await apiNaverCommerce.get(`/naverCommerce/getProductAttributes/${categoryId}`);
-        console.log('naver product attributes', response.data);
         return response.data;
     } catch (error) {
         console.error('Naver product attributes error', error);
@@ -53,10 +49,42 @@ export const getProductAttributes = async (categoryId) => {
 export const getOriginAreaInfo = async () => {
     try {
         const response = await apiNaverCommerce.get('/naverCommerce/getOriginAreaInfo');
-        console.log('naver origin area info', response.data);
         return response.data;
     } catch (error) {
         console.error('Naver origin area info error', error);
+        throw error;
+    }
+};
+
+// naver 카테고리 조회
+export const getNaverCategory = async (categoryId) => {
+    try {
+        const response = await apiNaverCommerce.get(`/naverCommerce/getNaverCategory/${categoryId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Naver category error', error);
+        throw error;
+    }
+};
+
+// 상품정보제공고시 상품군 목록 조회
+export const getNaverProductForProvidedNotice = async (categoryId) => {
+    try {
+        const response = await apiNaverCommerce.get(`/naverCommerce/getNaverProductForProvidedNotice/${categoryId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Naver product for provided notice error', error);
+        throw error;
+    }
+};
+
+// naver 카테고리 목록 조회 - 한달에 한번
+export const getNaverCategoryList = async () => {
+    try {
+        const response = await apiNaverCommerce.get('/naverCommerce/getNaverCategoryList');
+        return response.data;
+    } catch (error) {
+        console.error('Naver category list error', error);
         throw error;
     }
 };

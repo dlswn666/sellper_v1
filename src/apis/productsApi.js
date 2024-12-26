@@ -160,7 +160,6 @@ export const getProductPriceData = async (productId = '', search = '', page = 1,
 export const getPlatformPriceById = async (productId) => {
     try {
         const response = await apiProducts.get(`/api/getPlatformPriceById?productId=${productId}`);
-        console.log('response', response);
         return response.data;
     } catch (error) {
         console.error('Error fetching platform price data:', error);
@@ -173,7 +172,6 @@ export const putPlatformPrice = async (data) => {
     let reqUrl = `/api/putPlatformPrice`;
     try {
         const response = await apiProducts.put(reqUrl, data);
-        console.log(response);
         return response.data;
     } catch (error) {
         console.error('Error put putPlatformPrice:', error);
@@ -245,7 +243,6 @@ export const getOptionSettings = async (data) => {
 // 옵션 설정 저장
 export const postOptionSettings = async (data) => {
     let reqUrl = `/api/postOptionSettings`;
-    console.log('data', data);
     try {
         const response = await apiProducts.post(reqUrl, data);
         return response.data;
@@ -263,6 +260,19 @@ export const getDeliveryCompanies = async () => {
         return response.data;
     } catch (error) {
         console.error('Error fetching delivery companies:', error);
+        throw error;
+    }
+};
+
+// 상품 상세 정보 저장
+export const postProductAttribute = async (data) => {
+    let reqUrl = `/api/postProductAttribute`;
+    console.log('data - postProductAttribute', data);
+    try {
+        const response = await apiProducts.post(reqUrl, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error posting product attribute:', error);
         throw error;
     }
 };
