@@ -9,6 +9,7 @@ import { useProductCategory } from '../../hooks/useProductCategory.js';
 import '../../css/productNameCard.css';
 import '../../css/ProductCategoryCardSteps.css';
 import { SaveOutlined } from '@ant-design/icons';
+import { resetScroll } from '../../utils/scrollUtils.js';
 
 const { DirectoryTree } = Tree;
 
@@ -110,9 +111,11 @@ const ProductCategoryCardSteps = () => {
     };
 
     const onFocusProductCategoryCard = (index) => {
+        if (index === prevIndex) return;
         handleCategoryUpdate(index);
         setPrevIndex(index);
         setProductCategoryFocusedIndex(index);
+        resetScroll('.ant-card-body');
         setRecommendedSelectedCategory(null);
 
         const currentProduct = searchData[index];
@@ -292,7 +295,6 @@ const ProductCategoryCardSteps = () => {
             productCategoryCardRefs.current[productCategoryFocusedIndex].setSelectedCategory(info.node);
         }
     };
-
     return (
         <>
             <Row>

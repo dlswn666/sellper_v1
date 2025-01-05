@@ -1,17 +1,53 @@
 .data-title {
-    height: 30px;
+    min-height: 30px;
     margin: auto 0;
     font-size: 15px;
     font-weight: bold;
+    display: flex;
+    align-items: center;
 }
 
 .data-content {
-    height: 30px;
+    min-height: 30px;
+    height: auto;
     margin: auto 0;
     font-size: small;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.data-content .ant-image {
+    max-height: 100%;
+    width: auto;
+}
+
+.data-content .ant-image-img {
+    object-fit: contain;
+    max-width: 100%;
+    height: auto;
 }
 
 .divider {
     margin: 5px 0;
     border-width: 2px;
+}
+
+.data-input-container {
+    margin-bottom: 12px;
+}
+
+.data-input-container .ant-typography {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.data-input-container .ant-input-affix-wrapper {
+    border-radius: 4px;
+}
+
+.data-input-container .ant-input-disabled {
+    background-color: #f5f5f5;
+    color: rgba(0, 0, 0, 0.65);
 }

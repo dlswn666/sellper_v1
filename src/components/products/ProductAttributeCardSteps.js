@@ -10,6 +10,7 @@ import {
     getNaverCategory,
     getNaverProductForProvidedNotice,
 } from '../../apis/naverCommerceApi.js';
+import { resetScroll } from '../../utils/scrollUtils.js';
 
 const ProductAttributeCardSteps = () => {
     const [attributeData, setAttributeData] = useState([]);
@@ -86,10 +87,16 @@ const ProductAttributeCardSteps = () => {
         setPrevIndex(index);
         setAttributeFocusedIndex(index);
 
+        const detailImageContainer = document.querySelector('.detail-image-container');
+        if (detailImageContainer) {
+            detailImageContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth',
+            });
+        }
+
         const categoryId = attributeData[index]?.naver_recoCate_id[0];
         const wholesaleProductId = attributeData[index]?.wholesaleProductId;
-        // const naverProductForProvidedNotice = await getNaverProductForProvidedNotice(categoryId);
-        // console.log('naverProductForProvidedNotice', naverProductForProvidedNotice);
 
         // 카테고리 ID
         const naverRecoCateId1 = categoryId.categoryId1;
@@ -193,6 +200,7 @@ const ProductAttributeCardSteps = () => {
                         {detailImage?.length > 0 ? (
                             <Card title="상품 상세 이미지">
                                 <div
+                                    className="detail-image-container"
                                     style={{
                                         maxHeight: 'calc(100vh - 200px)',
                                         overflowY: 'auto',

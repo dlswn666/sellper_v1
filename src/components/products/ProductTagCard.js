@@ -3,6 +3,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import InputComponent from '../InputComponent.js';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import { putProductTag } from '../../apis/productsApi.js';
+import '../../css/ImagePreview.css';
 
 const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const [thumbNailUrl, setThumbNailUrl] = useState([]);

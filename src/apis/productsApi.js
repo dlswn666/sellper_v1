@@ -180,9 +180,9 @@ export const putPlatformPrice = async (data) => {
 };
 
 // 상품 속성 데이터 조회
-export const getProductAttributeData = async (productId, search, page = 1, limit = 100) => {
+export const getProductAttributeData = async (productId, search, page = 1, limit = 100, flag = '') => {
     const offset = (page - 1) * limit;
-    let reqUrl = `/api/getProductAttributeData?limit=${limit}&offset=${offset}`;
+    let reqUrl = `/api/getProductAttributeData?limit=${limit}&offset=${offset}&flag=${flag}`;
     if (productId) {
         reqUrl += `&productId=${productId}`;
     }
@@ -273,6 +273,70 @@ export const postProductAttribute = async (data) => {
         return response.data;
     } catch (error) {
         console.error('Error posting product attribute:', error);
+        throw error;
+    }
+};
+
+// 썸네일 업로드
+export const postProductThumbnail = async (data) => {
+    const reqUrl = `/api/postProductThumbnail`;
+    const config = {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    };
+
+    try {
+        // FormData 내용 디버깅
+        console.log('FormData entries:');
+        for (let pair of data.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+
+        const response = await apiProducts.post(reqUrl, data, config);
+
+        // 응답 데이터 디버깅
+        console.log('서버 응답:', response);
+
+        if (!response.data.success) {
+            throw new Error(response.data.message || '이미지 업로드 실패');
+        }
+        return response;
+    } catch (error) {
+        console.error('Error posting product thumbnail:', error);
+        throw error.response?.data || error;
+    }
+};
+
+// 상품 이미지 조회
+export const getProductThumbnail = async (wholesaleProductId) => {
+    let reqUrl = `/api/getProductThumbnail?wholesaleProductId=${wholesaleProductId}`;
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching product thumbnail:', error);
+        throw error;
+    }
+};
+
+// 상품 최종 정보 조회
+export const getFinalProductData = async (param) => {
+    const { limit, page, productId, searchTerm } = param;
+    let reqUrl = `/api/getFinalProductData?limit=${limit}&page=${page}`;
+
+    if (productId) {
+        reqUrl += `&productId=${productId}`;
+    }
+    if (searchTerm) {
+        reqUrl += `&searchTerm=${searchTerm}`;
+    }
+
+    try {
+        const response = await apiProducts.get(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching final product data:', error);
         throw error;
     }
 };

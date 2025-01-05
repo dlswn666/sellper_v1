@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useState, useRef } from 'react';
 import { Card, Row, Col, Divider, Image, Space } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
+import '../../css/ImagePreview.css';
 
 const ProductOptionPriceCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const cardRef = useRef(null);

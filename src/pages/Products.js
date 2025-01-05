@@ -9,6 +9,9 @@ import ProductCategoryCardSteps from '../components/products/ProductCategoryCard
 import ProductPriceCardSteps from '../components/products/ProductPriceCardSteps.js';
 import ProductAttributeCardSteps from '../components/products/ProductAttributeCardSteps.js';
 import ProductOptionPriceCardSteps from '../components/products/ProductOptionPriceCardSteps.js';
+import ThumbnailUploadCardSteps from '../components/products/ThumbnailUploadCardSteps.js';
+import ProductFinalCheckCardSteps from '../components/products/ProductFinalCheckCardSteps.js';
+
 const Products = () => {
     const initImageGroup = [
         'https://gw.alipayobjects.com/zos/antfincdn/LlvErxo8H9/photo-1503185912284-5271ff81b9a8.webp',
@@ -175,11 +178,11 @@ const Products = () => {
         {
             title: '썸네일 가공',
             description: '상품명 등록',
-            content: <div>상품 선택 컴포넌트 내용</div>,
+            content: <ThumbnailUploadCardSteps />,
         },
         {
             title: '최종 확인',
-            content: <div>선택한 상품을 확인하는 컴포넌트 내용</div>,
+            content: <ProductFinalCheckCardSteps />,
         },
         // 다른 스텝들도 추가 가능
     ];

@@ -1,0 +1,22 @@
+.ant-image-preview-switch-left {
+    /* 왼쪽 화살표 위치 조정 */
+    left: 20% !important; /* 기본값은 10% */
+}
+
+.ant-image-preview-switch-right {
+    /* 오른쪽 화살표 위치 조정 */
+    right: 20% !important; /* 기본값은 10% */
+}
+
+/* 필요한 경우 화살표 스타일도 수정 가능 */
+.ant-image-preview-switch-left,
+.ant-image-preview-switch-right {
+    background: rgba(0, 0, 0, 0.5) !important;
+    padding: 15px !important;
+    border-radius: 50% !important;
+    width: 100px !important;
+    height: 100px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

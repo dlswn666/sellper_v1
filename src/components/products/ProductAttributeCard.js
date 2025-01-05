@@ -81,6 +81,7 @@ const ProductNotificationCard = forwardRef(
 
                                         const newAttributes = values.map((value) => ({
                                             attributeSeq: attribute.attributeSeq,
+                                            attributeName: attribute.attributeName,
                                             attributeValueSeq: value,
                                             minAttributeValue: options.find((option) => option.value === value)?.label,
                                         }));
@@ -163,7 +164,10 @@ const ProductNotificationCard = forwardRef(
                         style={{ width: '100%' }}
                         placeholder="네이버 인증 정보 선택"
                         options={selectOptions}
-                        onChange={onChangeCallback}
+                        onChange={(value) => {
+                            const selectedOption = selectOptions.find((option) => option.value === value);
+                            onChangeCallback(value, selectedOption?.label);
+                        }}
                     />
                 </>
             );
@@ -187,9 +191,21 @@ const ProductNotificationCard = forwardRef(
             }
         };
 
-        const updateCertification = (id, field, value) => {
+        const updateCertification = (id, field, value, label) => {
             setCertificationList(
-                certificationList.map((cert) => (cert.id === id ? { ...cert, [field]: value } : cert))
+                certificationList.map((cert) => {
+                    if (cert.id === id) {
+                        if (field === 'certInfo') {
+                            return {
+                                ...cert,
+                                [field]: value,
+                                certInfoName: label,
+                            };
+                        }
+                        return { ...cert, [field]: value };
+                    }
+                    return cert;
+                })
             );
         };
 
@@ -363,7 +379,13 @@ const ProductNotificationCard = forwardRef(
                                                 { label: '국산', value: 'domestic' },
                                                 { label: '수입산', value: 'imported' },
                                             ]}
-                                            onChange={(value) => setOriginArea({ ...originArea, originNation: value })}
+                                            onChange={(value) =>
+                                                setOriginArea({
+                                                    ...originArea,
+                                                    originNation: value,
+                                                    originNationName: value === 'domestic' ? '국산' : '수입산',
+                                                })
+                                            }
                                         />
                                     </Col>
                                     <Col span={10}>
@@ -402,8 +424,8 @@ const ProductNotificationCard = forwardRef(
                                         <Col span={6}>
                                             <div className="attribute-input-group">
                                                 <Text type="secondary">인증 정보</Text>
-                                                {renderNaverCategory(naverCategory, (value) =>
-                                                    updateCertification(cert.id, 'certInfo', value)
+                                                {renderNaverCategory(naverCategory, (value, label) =>
+                                                    updateCertification(cert.id, 'certInfo', value, label)
                                                 )}
                                             </div>
                                         </Col>

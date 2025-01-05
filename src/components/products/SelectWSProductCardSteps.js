@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Button, Flex, Table } from 'antd';
+import { Row, Col, Space, Empty, Button, Flex, Table, Card } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import SelectWSProductCard from './SelectWSProductCard.js';
 import { putWorkingData, selectProductData } from '../../apis/productsApi.js';
@@ -153,86 +153,79 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
                     />
                 </Col>
             </Row>
-            <Row>
-                <Col span={12}>
-                    <Flex justify="flex-end" align="center" style={{ height: '100px' }}>
-                        <Button
-                            icon={
-                                searchData && searchData.length === selectedWSProduct.length ? (
-                                    <CloseOutlined />
-                                ) : (
-                                    <CheckOutlined />
-                                )
-                            }
-                            type="primary"
-                            size={'large'}
-                            onClick={selectAll}
-                            loading={selectLoading}
-                            iconPosition={'end'}
-                            style={{ marginRight: '20px' }}
-                        >
-                            SelectAll
-                        </Button>
-                        <Button
-                            icon={<FormOutlined />}
-                            type="primary"
-                            size={'large'}
-                            onClick={save}
-                            loading={saveLoading}
-                            iconPosition={'end'}
-                        >
-                            SAVE
-                        </Button>
-                    </Flex>
-                </Col>
-            </Row>
-            <Row gutter={16} style={{ marginBottom: '10px' }}>
-                <Col span={12} className="getter-row">
-                    <p style={{ fontSize: '20px', textAlign: 'right' }}>
-                        {' '}
-                        상품수: {searchData && searchData.length ? searchData.length : 0}
-                    </p>
-                </Col>
-                <Col span={12} className="getter-row">
-                    <p style={{ fontSize: '20px', textAlign: 'right' }}>
-                        선택 상품: {selectedWSProduct && selectedWSProduct.length ? selectedWSProduct.length : 0}
-                    </p>
-                </Col>
-            </Row>
-            <Row gutter={16}>
+            <Row gutter={16} style={{ marginTop: '16px' }}>
                 <Col span={12} className="gutter-row">
-                    <Space
-                        direction="vertical"
-                        size={'middle'}
-                        style={{ display: 'flex' }}
-                        onKeyDown={handleSearchKeywordKeyDown}
-                        tabIndex={0}
+                    <Card
+                        title={`상품수 (${searchData && searchData.length ? searchData.length : 0}개)`}
+                        extra={
+                            <Space>
+                                <Button
+                                    icon={
+                                        searchData && searchData.length === selectedWSProduct.length ? (
+                                            <CloseOutlined />
+                                        ) : (
+                                            <CheckOutlined />
+                                        )
+                                    }
+                                    type="primary"
+                                    size={'large'}
+                                    onClick={selectAll}
+                                    loading={selectLoading}
+                                    iconPosition={'end'}
+                                    style={{ marginRight: '20px' }}
+                                >
+                                    SelectAll
+                                </Button>
+                                <Button
+                                    icon={<FormOutlined />}
+                                    type="primary"
+                                    size={'large'}
+                                    onClick={save}
+                                    loading={saveLoading}
+                                    iconPosition={'end'}
+                                >
+                                    SAVE
+                                </Button>
+                            </Space>
+                        }
                     >
-                        {searchData && searchData.length > 0 ? (
-                            searchData.map((item, index) => (
-                                <SelectWSProductCard
-                                    key={index}
-                                    data={item}
-                                    isFocused={index === searchKeywordFocusedIndex}
-                                    ref={(el) => (searchKeywordCardRefs.current[index] = el)}
-                                    onCardFocus={() => onFocusSearchKeywordCard(index)}
-                                    onClick={() => handleCardClick(item)}
-                                    isSelected={selectedWSProduct.some(
-                                        (product) => product.productId === item.productId
-                                    )}
-                                />
-                            ))
+                        <Space
+                            direction="vertical"
+                            size={'middle'}
+                            style={{ display: 'flex' }}
+                            onKeyDown={handleSearchKeywordKeyDown}
+                            tabIndex={0}
+                        >
+                            {searchData && searchData.length > 0 ? (
+                                searchData.map((item, index) => (
+                                    <SelectWSProductCard
+                                        key={index}
+                                        data={item}
+                                        isFocused={index === searchKeywordFocusedIndex}
+                                        ref={(el) => (searchKeywordCardRefs.current[index] = el)}
+                                        onCardFocus={() => onFocusSearchKeywordCard(index)}
+                                        onClick={() => handleCardClick(item)}
+                                        isSelected={selectedWSProduct.some(
+                                            (product) => product.productId === item.productId
+                                        )}
+                                    />
+                                ))
+                            ) : (
+                                <Empty />
+                            )}
+                        </Space>
+                    </Card>
+                </Col>
+                <Col span={12} className="gutter-row">
+                    <Card
+                        title={`선택 상품 (${selectedWSProduct && selectedWSProduct.length ? selectedWSProduct.length : 0}개)`}
+                    >
+                        {selectedWSProduct && selectedWSProduct.length > 0 ? (
+                            <Table columns={columns} dataSource={selectedWSProduct} />
                         ) : (
                             <Empty />
                         )}
-                    </Space>
-                </Col>
-                <Col span={12} className="gutter-row">
-                    {selectedWSProduct && selectedWSProduct.length > 0 ? (
-                        <Table columns={columns} dataSource={selectedWSProduct} />
-                    ) : (
-                        <Empty />
-                    )}
+                    </Card>
                 </Col>
             </Row>
         </>
