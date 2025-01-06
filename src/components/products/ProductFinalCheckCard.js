@@ -87,7 +87,25 @@ const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus }, ref)
                             </Col>
                             <Col span={18}>
                                 <p className="data-content">
-                                    <a href={data.detailPageUrl} target="_blank" rel="noopener noreferrer">
+                                    <a
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const screenWidth = window.screen.width;
+                                            const screenHeight = window.screen.height;
+                                            const windowWidth = 1200;
+                                            const windowHeight = 800;
+                                            const left = screenWidth - windowWidth;
+                                            const top = 0;
+
+                                            window.open(
+                                                data.detailPageUrl,
+                                                '_blank',
+                                                `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
+                                            );
+                                        }}
+                                        href={data.detailPageUrl}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                         상세페이지 이동
                                     </a>
                                 </p>

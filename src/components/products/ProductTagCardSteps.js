@@ -1,4 +1,4 @@
-import { Col, Empty, Row, Space } from 'antd';
+import { Col, Empty, Row, Space, message } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import { useEffect, useRef, useState } from 'react';
 import { getAutoReco, putProductTag } from '../../apis/productsApi.js';
@@ -44,7 +44,6 @@ const ProductTagCardSteps = () => {
         try {
             const response = await getAutoReco(value, isLoadMore ? page : 1, limit, 'tag');
             const result = response;
-
             if (!isLoadMore) {
                 setSearchData(result);
                 setProductTagFocusedIndex(0);
@@ -100,6 +99,8 @@ const ProductTagCardSteps = () => {
                 };
                 try {
                     putProductTag(paramData);
+                    message.success('태그가 성공적으로 변경되었습니다.');
+                    searchData[prevIndex].platformTag = prevValue;
                 } catch (error) {
                     console.error('태그 업데이트 중 오류 발생:', error);
                 }

@@ -3,7 +3,18 @@ import { Input } from 'antd';
 
 const InputComponent = forwardRef(
     (
-        { type = 'text', readOnly = false, onBlur, onFocus, groupKey, onGroupKeyNavigation, defaultValue, ...props },
+        {
+            type = 'text',
+            readOnly = false,
+            onBlur,
+            onFocus,
+            groupKey,
+            onGroupKeyNavigation,
+            defaultValue,
+            showCount = false,
+            maxLength = 100,
+            ...props
+        },
         ref
     ) => {
         // userRef - React Hook 중 하나. Dom 요소나 값을 기억할 수 있는 방법을 제공
@@ -48,6 +59,8 @@ const InputComponent = forwardRef(
                 onKeyDown={handleKeyDown}
                 value={value} // Controlled component로 설정
                 onChange={handleChange} // 상태 업데이트 핸들러
+                showCount={showCount}
+                maxLength={maxLength}
                 {...props}
             />
         );

@@ -1,4 +1,4 @@
-import { Card, Image, Space, Row, Col, Divider, Input } from 'antd';
+import { Card, Image, Space, Row, Col, Divider, Input, message } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
@@ -45,6 +45,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                         ...prevData,
                         searchWord: curValue, // searchWord 값 업데이트
                     }));
+                    message.success('검색어가 성공적으로 변경되었습니다.');
                 }
             }
         }
@@ -107,6 +108,22 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
                                 <p className="data-content">{localData.productPrice} </p>
                             </Col>
                         </Row>
+                        {localData.searchWord && (
+                            <>
+                                <Divider className="divider" />
+                                <Row className="table-row" gutter={[4, 1]}>
+                                    <Col span={5}>
+                                        <p className="data-title">검색 키워드</p>
+                                    </Col>
+                                    <Col span={1}>
+                                        <p className="data-title">:</p>
+                                    </Col>
+                                    <Col span={18}>
+                                        <p className="data-content">{localData.searchWord} </p>
+                                    </Col>
+                                </Row>
+                            </>
+                        )}
                         <Divider className="divider" />
                         <Row className="table-row" gutter={[4, 1]}>
                             <Col span={5}>

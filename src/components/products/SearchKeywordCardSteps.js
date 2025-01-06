@@ -133,6 +133,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
                                 <Empty />
                             )}
                         </Card>
+                        <h2> 1. 배치 테이블 관리 시스템 개발 필요</h2>
                     </Affix>
                 </Col>
             </Row>

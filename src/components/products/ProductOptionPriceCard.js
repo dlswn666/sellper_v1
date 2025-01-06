@@ -115,6 +115,40 @@ const ProductOptionPriceCard = forwardRef(({ data, isFocused, onCardFocus }, ref
                                 <p className="data-content">{formatKRW(data.finalSalePrice)}원</p>
                             </Col>
                         </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">상세 페이지</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>
+                                <p className="data-content">
+                                    <a
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const screenWidth = window.screen.width;
+                                            const screenHeight = window.screen.height;
+                                            const windowWidth = 1200;
+                                            const windowHeight = 800;
+                                            const left = screenWidth - windowWidth;
+                                            const top = 0;
+
+                                            window.open(
+                                                data.detailpageUrl,
+                                                '_blank',
+                                                `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
+                                            );
+                                        }}
+                                        href={data.detailpageUrl}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        상세페이지 이동
+                                    </a>
+                                </p>
+                            </Col>
+                        </Row>
                     </div>
                 </div>
             </Image.PreviewGroup>

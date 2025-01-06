@@ -137,6 +137,40 @@ const ThumbnailUploadCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
                             </Col>
                         </Row>
                         <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">상세 페이지</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>
+                                <p className="data-content">
+                                    <a
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const screenWidth = window.screen.width;
+                                            const screenHeight = window.screen.height;
+                                            const windowWidth = 1200;
+                                            const windowHeight = 800;
+                                            const left = screenWidth - windowWidth;
+                                            const top = 0;
+
+                                            window.open(
+                                                data.detailPageUrl,
+                                                '_blank',
+                                                `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
+                                            );
+                                        }}
+                                        href={data.detailPageUrl}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        상세페이지 이동
+                                    </a>
+                                </p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
                         <Row>
                             <Col span={5}>
                                 <p className="data-title">설정 태그</p>

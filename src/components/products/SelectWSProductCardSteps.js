@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Button, Flex, Table, Card } from 'antd';
+import { Row, Col, Space, Empty, Button, Flex, Table, Card, message } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import SelectWSProductCard from './SelectWSProductCard.js';
 import { putWorkingData, selectProductData } from '../../apis/productsApi.js';
@@ -127,8 +127,7 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
 
     const save = async () => {
         const result = await putWorkingData(selectedWSProduct);
-        console.log('result', result);
-        alert(result.message);
+        message.success(result.message);
         onSearch();
         setSelectedWSProduct([]);
     };

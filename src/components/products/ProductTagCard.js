@@ -11,13 +11,23 @@ const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
     const [localData, setLocalData] = useState(structuredClone(data));
+    const [tagCount, setTagCount] = useState(0);
 
     useEffect(() => {
+        console.log('tag data', data);
         if (data.thumbnail && Array.isArray(data.thumbnail)) {
             const urls = data.thumbnail.map((item) => item.thumbNailUrl);
             setThumbNailUrl(urls);
         }
     }, [data.thumbnail]);
+
+    useEffect(() => {
+        const tags = inputValue
+            .trim()
+            .split(' ')
+            .filter((tag) => tag.length > 0);
+        setTagCount(tags.length);
+    }, [inputValue]);
 
     useImperativeHandle(ref, () => ({
         focusInput: () => {
@@ -83,13 +93,50 @@ const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                         <Col span={6}>
                                             <p className="data-content">{data.wholeProductPrice}</p>
                                         </Col>
+                                    </Row>
+                                    <Divider className="divider" />
+                                    <Row className="table-row" gutter={[4, 1]}>
                                         <Col span={5}>
-                                            <p className="data-title">설정 검색어 :</p>
+                                            <p className="data-title">상세 페이지</p>
                                         </Col>
                                         <Col span={1}>
                                             <p className="data-title">:</p>
                                         </Col>
-                                        <Col span={6}>
+                                        <Col span={18}>
+                                            <p className="data-content">
+                                                <a
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const screenWidth = window.screen.width;
+                                                        const screenHeight = window.screen.height;
+                                                        const windowWidth = 1200;
+                                                        const windowHeight = 800;
+                                                        const left = screenWidth - windowWidth;
+                                                        const top = 0;
+
+                                                        window.open(
+                                                            data.detailpageUrl,
+                                                            '_blank',
+                                                            `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
+                                                        );
+                                                    }}
+                                                    href={data.detailpageUrl}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
+                                                    상세페이지 이동
+                                                </a>
+                                            </p>
+                                        </Col>
+                                    </Row>
+                                    <Divider className="divider" />
+                                    <Row className="table-row" gutter={[4, 1]}>
+                                        <Col span={5}>
+                                            <p className="data-title">설정 검색어 </p>
+                                        </Col>
+                                        <Col span={1}>
+                                            <p className="data-title">:</p>
+                                        </Col>
+                                        <Col span={18}>
                                             <p className="data-content">{data.searchWord}</p>
                                         </Col>
                                     </Row>
@@ -105,10 +152,39 @@ const ProductTagCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
                                             <p className="data-content">{data.productName}</p>
                                         </Col>
                                     </Row>
+                                    {data.platformTag && (
+                                        <>
+                                            <Divider className="divider" />
+                                            <Row className="table-row" gutter={[4, 1]}>
+                                                <Col span={5}>
+                                                    <p className="data-title">태그</p>
+                                                </Col>
+                                                <Col span={1}>
+                                                    <p className="data-title">:</p>
+                                                </Col>
+                                                <Col span={18}>
+                                                    <p className="data-content">
+                                                        {`#${data.platformTag.split(' ').join(' #')}`}
+                                                    </p>
+                                                </Col>
+                                            </Row>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </Image.PreviewGroup>
                         <div style={{ marginTop: 16 }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: 8,
+                                }}
+                            >
+                                <span>태그 입력</span>
+                                <span style={{ color: tagCount > 0 ? '#1890ff' : '#999' }}>{tagCount}개의 태그</span>
+                            </div>
                             <InputComponent
                                 ref={inputRef}
                                 placeholder="상품 태그를 입력해주세요"

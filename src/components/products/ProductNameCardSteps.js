@@ -1,4 +1,4 @@
-import { Col, Empty, Row, Space } from 'antd';
+import { Affix, Card, Col, Empty, Row, Space, message } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import ProductNameCard from './ProductNameCard.js';
 import Search from 'antd/es/input/Search.js';
@@ -83,6 +83,8 @@ const ProductNameCardSteps = () => {
                     productName: prevValue,
                 };
                 reqPutProductName(paramData);
+                searchData[prevIndex].productName = prevValue;
+                message.success('상품명이 성공적으로 변경되었습니다.');
             }
         }
         setPrevIndex(index);
@@ -124,8 +126,8 @@ const ProductNameCardSteps = () => {
     ));
 
     return (
-        <>
-            <Row>
+        <div style={{ padding: '24px' }}>
+            <Row style={{ marginBottom: '16px' }}>
                 <Col span={24}>
                     <Search
                         placeholder="상품 검색어를 입력해 주세요"
@@ -135,45 +137,43 @@ const ProductNameCardSteps = () => {
                     />
                 </Col>
             </Row>
-            <Row gutter={16} style={{ marginBottom: '10px' }}>
-                <Col span={12} className="getter-row">
-                    <p style={{ fontSize: '20px', textAlign: 'right' }}>
-                        {' '}
-                        상품수: {searchData && searchData.length ? searchData.length : 0}
-                    </p>
-                </Col>
-            </Row>
-            <Row gutter={16} style={{ marginBottom: '10px' }}>
+            <Row gutter={16}>
                 <Col span={12}>
-                    <Space
-                        direction="vertical"
-                        size="middle"
-                        style={{ display: 'flex', width: '100%' }}
-                        onKeyDown={handleProductNameKeyDown}
-                        tabIndex={0}
-                    >
-                        {searchData && searchData.length > 0 ? (
-                            searchData.map((item, index) => (
-                                <ProductNameCard
-                                    key={index}
-                                    data={item}
-                                    isFocused={index === productNameFocusedIndex}
-                                    ref={(el) => (productNameCardRefs.current[index] = el)}
-                                    onCardFocus={() => onFocusProductNameCard(index)}
-                                />
-                            ))
-                        ) : (
-                            <Empty />
-                        )}
-                    </Space>
+                    <Card title={`작업 상품 목록 (${searchData.length}개)`}>
+                        <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ display: 'flex', width: '100%' }}
+                            onKeyDown={handleProductNameKeyDown}
+                            tabIndex={0}
+                        >
+                            {searchData && searchData.length > 0 ? (
+                                searchData.map((item, index) => (
+                                    <ProductNameCard
+                                        key={index}
+                                        data={item}
+                                        isFocused={index === productNameFocusedIndex}
+                                        ref={(el) => (productNameCardRefs.current[index] = el)}
+                                        onCardFocus={() => onFocusProductNameCard(index)}
+                                    />
+                                ))
+                            ) : (
+                                <Empty />
+                            )}
+                        </Space>
+                    </Card>
                 </Col>
                 <Col span={12}>
-                    <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
-                        <div className="reco-word-container">{styledRecoProductName}</div>
-                    </Space>
+                    <Affix offsetTop={100}>
+                        <Card title="추천 상품명">
+                            <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
+                                <div className="reco-word-container">{styledRecoProductName}</div>
+                            </Space>
+                        </Card>
+                    </Affix>
                 </Col>
             </Row>
-        </>
+        </div>
     );
 };
 

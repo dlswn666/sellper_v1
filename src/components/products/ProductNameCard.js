@@ -35,82 +35,136 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
     }, [data.thumbnail]);
 
     return (
-        <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
-            <Row>
-                <Col span={24}>
-                    <Card hoverable style={{ width: '100%' }} onFocus={onCardFocus} tabIndex={0}>
-                        <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
-                            <div style={{ display: 'flex', flex: 1 }}>
-                                <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
-                                <div style={{ marginLeft: 16, flex: 1 }}>
-                                    <Row className="table-row" gutter={[4, 1]}>
-                                        <Col span={5}>
-                                            <p className="data-title">상품 이름 </p>
-                                        </Col>
-                                        <Col span={1}>
-                                            <p className="data-title">:</p>
-                                        </Col>
-                                        <Col span={18}>
-                                            <p className="data-content">{data.wholeProductName}</p>
-                                        </Col>
-                                    </Row>
-                                    <Divider className="divider" />
-                                    <Row className="table-row" gutter={[4, 1]}>
-                                        <Col span={5}>
-                                            <p className="data-title">판매 사이트</p>
-                                        </Col>
-                                        <Col span={1}>
-                                            <p className="data-title">:</p>
-                                        </Col>
-                                        <Col span={6}>
-                                            <p className="data-content">{data.siteName}</p>
-                                        </Col>
-                                        <Col span={5}>
-                                            <p className="data-title">상품 번호</p>
-                                        </Col>
-                                        <Col span={1}>
-                                            <p className="data-title">:</p>
-                                        </Col>
-                                        <Col span={6}>
-                                            <p className="data-content">{data.productCode}</p>
-                                        </Col>
-                                    </Row>
-                                    <Divider className="divider" />
-                                    <Row className="table-row" gutter={[4, 1]}>
-                                        <Col span={5}>
-                                            <p className="data-title">판매 가격</p>
-                                        </Col>
-                                        <Col span={1}>
-                                            <p className="data-title">:</p>
-                                        </Col>
-                                        <Col span={6}>
-                                            <p className="data-content">{data.wholeProductPrice}</p>
-                                        </Col>
-                                        <Col span={5}>
-                                            <p className="data-title">설정 검색어 :</p>
-                                        </Col>
-                                        <Col span={1}>
-                                            <p className="data-title">:</p>
-                                        </Col>
-                                        <Col span={6}>
-                                            <p className="data-content">{data.searchWord}</p>
-                                        </Col>
-                                    </Row>
-                                </div>
-                            </div>
-                        </Image.PreviewGroup>
-                        <div style={{ marginTop: 16 }}>
-                            <InputComponent
-                                ref={inputRef}
-                                placeholder="상품명을 입력해주세요"
-                                value={inputValue} // value를 상태로 관리하여 전달
-                                onChange={(e) => setInputValue(e.target.value)} // 상태 업데이트
-                            />
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
-        </Space>
+        <Card
+            hoverable
+            onFocus={onCardFocus}
+            tabIndex={0}
+            style={{ border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9' }}
+        >
+            <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
+                <div style={{ display: 'flex', flex: 1 }}>
+                    <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
+                    <div style={{ marginLeft: 16, flex: 1 }}>
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">상품 이름 </p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>
+                                <p className="data-content">{data.wholeProductName}</p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">판매 사이트</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.siteName}</p>
+                            </Col>
+                            <Col span={5}>
+                                <p className="data-title">상품 번호</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.productCode}</p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">판매 가격</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.wholeProductPrice}</p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">상세 페이지</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>
+                                <p className="data-content">
+                                    <a
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            const screenWidth = window.screen.width;
+                                            const screenHeight = window.screen.height;
+                                            const windowWidth = 1200;
+                                            const windowHeight = 800;
+                                            const left = screenWidth - windowWidth;
+                                            const top = 0;
+
+                                            window.open(
+                                                data.detailpageUrl,
+                                                '_blank',
+                                                `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
+                                            );
+                                        }}
+                                        href={data.detailpageUrl}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        상세페이지 이동
+                                    </a>
+                                </p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">설정 검색어 </p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>
+                                <p className="data-content">{data.searchWord}</p>
+                            </Col>
+                        </Row>
+                        {data.productName && (
+                            <>
+                                <Divider className="divider" />
+                                <Row className="table-row" gutter={[4, 1]}>
+                                    <Col span={5}>
+                                        <p className="data-title">가공상품명 </p>
+                                    </Col>
+                                    <Col span={1}>
+                                        <p className="data-title">:</p>
+                                    </Col>
+                                    <Col span={18}>
+                                        <p className="data-content">{data.productName}</p>
+                                    </Col>
+                                </Row>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </Image.PreviewGroup>
+            <div style={{ marginTop: 16 }}>
+                <InputComponent
+                    ref={inputRef}
+                    placeholder="상품명을 입력해주세요"
+                    value={inputValue} // value를 상태로 관리하여 전달
+                    onChange={(e) => setInputValue(e.target.value)} // 상태 업데이트
+                    showCount={true}
+                    maxLength={100}
+                />
+            </div>
+        </Card>
     );
 });
 
