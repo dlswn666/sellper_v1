@@ -39,7 +39,6 @@ export const ThumbnailUploadCardSteps = () => {
                 setThumbnailUpdateFocusedIndex(0);
                 const detailImageData = await getProductDetailImage(result[0]?.wholesaleProductId);
                 setDetailImage(detailImageData);
-                console.log(result);
             } else {
                 setThumbnailUpdateData((prev) => [...prev, ...result]);
             }

@@ -125,8 +125,9 @@ const SelectWSProductCardSteps = ({ setSearchKeywordUrl, searchKeywordFocusedInd
         setSelectLoading(false);
     };
 
-    const save = () => {
-        const result = putWorkingData(selectedWSProduct);
+    const save = async () => {
+        const result = await putWorkingData(selectedWSProduct);
+        console.log('result', result);
         alert(result.message);
         onSearch();
         setSelectedWSProduct([]);

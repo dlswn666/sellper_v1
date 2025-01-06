@@ -1,4 +1,4 @@
-import { Card, Space, Row, Col, Divider } from 'antd';
+import { Card, Row, Col, Divider, Image } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
@@ -23,6 +23,10 @@ const SelectWSProductCard = forwardRef(({ data, isFocused, onCardFocus, onClick,
         }
     }, [isFocused]);
 
+    useEffect(() => {
+        setThumbNailUrl(data.thumbnail?.map((item) => item.thumbNailUrl) || []);
+    }, [data]);
+
     // 선택된 카드에 스타일을 동적으로 적용
     const cardStyle = {
         width: '100%',
@@ -32,63 +36,66 @@ const SelectWSProductCard = forwardRef(({ data, isFocused, onCardFocus, onClick,
 
     return (
         <Card hoverable style={cardStyle} onFocus={onCardFocus} tabIndex={0} onClick={onClick}>
-            <div style={{ display: 'flex', flex: 1 }}>
-                <div style={{ marginLeft: 16, flex: 1 }}>
-                    <Row className="table-row" gutter={[4, 1]}>
-                        <Col span={5}>
-                            <p className="data-title">상품 이름 </p>
-                        </Col>
-                        <Col span={1}>
-                            <p className="data-title">:</p>
-                        </Col>
-                        <Col span={18}>
-                            <p className="data-content">{data.productName}</p>
-                        </Col>
-                    </Row>
-                    <Divider className="divider" />
-                    <Row className="table-row" gutter={[4, 1]}>
-                        <Col span={5}>
-                            <p className="data-title">판매 사이트</p>
-                        </Col>
-                        <Col span={1}>
-                            <p className="data-title">:</p>
-                        </Col>
-                        <Col span={6}>
-                            <p className="data-content">{data.siteName}</p>
-                        </Col>
-                        <Col span={5}>
-                            <p className="data-title">상품 번호</p>
-                        </Col>
-                        <Col span={1}>
-                            <p className="data-title">:</p>
-                        </Col>
-                        <Col span={6}>
-                            <p className="data-content">{data.productCode}</p>
-                        </Col>
-                    </Row>
-                    <Divider className="divider" />
-                    <Row className="table-row" gutter={[4, 1]}>
-                        <Col span={5}>
-                            <p className="data-title">판매 가격</p>
-                        </Col>
-                        <Col span={1}>
-                            <p className="data-title">:</p>
-                        </Col>
-                        <Col span={6}>
-                            <p className="data-content">{data.productPrice}</p>
-                        </Col>
-                        <Col span={5}>
-                            <p className="data-title">작업 상품 수</p>
-                        </Col>
-                        <Col span={1}>
-                            <p className="data-title">:</p>
-                        </Col>
-                        <Col span={6}>
-                            <p className="data-content">{data.workingCnt} </p>
-                        </Col>
-                    </Row>
+            <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
+                <div style={{ display: 'flex', flex: 1 }}>
+                    <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
+                    <div style={{ marginLeft: 16, flex: 1 }}>
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">상품 이름 </p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={18}>
+                                <p className="data-content">{data.productName}</p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">판매 사이트</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.siteName}</p>
+                            </Col>
+                            <Col span={5}>
+                                <p className="data-title">상품 번호</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.productCode}</p>
+                            </Col>
+                        </Row>
+                        <Divider className="divider" />
+                        <Row className="table-row" gutter={[4, 1]}>
+                            <Col span={5}>
+                                <p className="data-title">판매 가격</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.productPrice}</p>
+                            </Col>
+                            <Col span={5}>
+                                <p className="data-title">작업 상품 수</p>
+                            </Col>
+                            <Col span={1}>
+                                <p className="data-title">:</p>
+                            </Col>
+                            <Col span={6}>
+                                <p className="data-content">{data.workingCnt} </p>
+                            </Col>
+                        </Row>
+                    </div>
                 </div>
-            </div>
+            </Image.PreviewGroup>
         </Card>
     );
 });

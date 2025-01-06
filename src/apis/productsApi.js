@@ -25,9 +25,10 @@ export const putWorkingData = async (data) => {
     const reqUrl = '/api/putWorkingData';
     try {
         const response = await apiProducts.put(reqUrl, data);
-        return response;
+        return response.data;
     } catch (error) {
         console.error('Error put putWorkingData : ', error);
+        throw error;
     }
 };
 
