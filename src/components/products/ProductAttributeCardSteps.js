@@ -27,6 +27,7 @@ const ProductAttributeCardSteps = () => {
     const [naverCategory, setNaverCategory] = useState([]);
     const [flippedCardIndex, setFlippedCardIndex] = useState(null);
     const [categoryCache, setCategoryCache] = useState({});
+    const [naverProductForProvidedNotice, setNaverProductForProvidedNotice] = useState([]);
 
     useEffect(() => {
         onSearch();
@@ -105,10 +106,12 @@ const ProductAttributeCardSteps = () => {
         const naverRecoCateId4 = categoryId.categoryId4;
         const naverRecoCateId5 = categoryId.categoryId5;
 
-        const naverProductForProvidedNotice = await getNaverProductForProvidedNotice(naverRecoCateId1);
-
         let lastCategoryId =
             naverRecoCateId5 || naverRecoCateId4 || naverRecoCateId3 || naverRecoCateId2 || naverRecoCateId1 || '';
+
+        const naverProductForProvidedNotice = await getNaverProductForProvidedNotice(lastCategoryId);
+        setNaverProductForProvidedNotice(naverProductForProvidedNotice);
+
         if (lastCategoryId) {
             if (categoryCache[lastCategoryId]) {
                 const { attributes, attributeValues, naverCategory } = categoryCache[lastCategoryId];
@@ -184,6 +187,7 @@ const ProductAttributeCardSteps = () => {
                                         onCardFocus={() => onFocusAttributeCard(index)}
                                         attributeValues={attributeValues}
                                         attributes={attributes}
+                                        naverProductForProvidedNotice={naverProductForProvidedNotice}
                                         naverCategory={naverCategory}
                                         isFlipped={index === flippedCardIndex}
                                         onFlip={() => handleCardFlip(index)}

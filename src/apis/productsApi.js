@@ -341,3 +341,15 @@ export const getFinalProductData = async (param) => {
         throw error;
     }
 };
+
+// 네이버 이미지 업로드
+export const postNaverProductThumbnail = async (data) => {
+    let reqUrl = `/api/postNaverProductThumbnail`;
+    try {
+        const response = await apiProducts.post(reqUrl, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error posting naver product thumbnail:', error);
+        throw error;
+    }
+};

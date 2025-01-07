@@ -88,3 +88,15 @@ export const getNaverCategoryList = async () => {
         throw error;
     }
 };
+
+// 상품 등록
+export const registerNaverProduct = async (productData) => {
+    try {
+        console.log(productData);
+        const response = await apiNaverCommerce.post('/naverCommerce/registerNaverProduct', productData);
+        return response.data;
+    } catch (error) {
+        console.error('Naver product register error', error);
+        throw error;
+    }
+};

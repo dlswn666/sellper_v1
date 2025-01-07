@@ -1,9 +1,9 @@
 import React, { useState, useRef, forwardRef, useEffect } from 'react';
-import { Card, Image, Row, Col, Divider, message, Typography } from 'antd';
+import { Card, Image, Row, Col, Divider, message, Typography, Button } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/ImagePreview.css';
 import { FileUploadComponent } from '../FileUploadComponent.js';
-import { postProductThumbnail } from '../../apis/productsApi.js';
+import { postProductThumbnail, postNaverProductThumbnail } from '../../apis/productsApi.js';
 
 const REACT_APP_BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -46,6 +46,24 @@ const ThumbnailUploadCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
         }
     };
 
+    const handleNaverUpload = async () => {
+        try {
+            const param = {
+                wholesaleProductId: data.wholesaleProductId,
+            };
+            const response = await postNaverProductThumbnail(param);
+            console.log('response', response);
+            if (response.success) {
+                message.success(response.message);
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            console.error('네이버 이미지 업로드 중 에러 발생:', error);
+            message.error('네이버 이미지 업로드에 실패했습니다.');
+        }
+    };
+
     return (
         <Card
             ref={cardRef}
@@ -55,7 +73,7 @@ const ThumbnailUploadCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
             onClick={onCardFocus}
             tabIndex={0}
             actions={[
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px', gap: '8px' }}>
                     <FileUploadComponent
                         onUpload={handleUpload}
                         maxFileCount={10}
@@ -64,6 +82,9 @@ const ThumbnailUploadCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
                         maxSize={5}
                         imageSize={150}
                     />
+                    <Button type="primary" onClick={handleNaverUpload}>
+                        네이버 이미지 업로드
+                    </Button>
                 </div>,
             ]}
         >

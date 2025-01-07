@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getFinalProductData } from '../../apis/productsApi.js';
+import { registerNaverProduct } from '../../apis/naverCommerceApi.js';
 import { Row, Col, Card, Empty, Space, Affix, Image, Button, Divider, Typography, Input } from 'antd';
 import ProductFinalCheckCard from './ProductFinalCheckCard.js';
 import Search from 'antd/es/input/Search.js';
@@ -167,6 +168,12 @@ const ProductFinalCheckCardSteps = () => {
         setThumbnailUrl(newThumbnailUrl);
     };
 
+    const onRegisterNaverProduct = async () => {
+        console.log(detailProduct);
+        const response = await registerNaverProduct(detailProduct);
+        console.log(response);
+    };
+
     return (
         <div style={{ padding: '24px' }}>
             <Row style={{ marginBottom: '16px' }}>
@@ -202,7 +209,10 @@ const ProductFinalCheckCardSteps = () => {
                 </Col>
                 <Col span={15}>
                     <Affix offsetTop={24}>
-                        <Card title="상품 상세 정보">
+                        <Card
+                            title="상품 상세 정보"
+                            extra={<Button onClick={onRegisterNaverProduct}>상품 등록</Button>}
+                        >
                             <div style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                                 <Card title={`상품 : ${titleProductName}`}>
                                     <Row>
