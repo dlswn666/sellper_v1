@@ -92,11 +92,21 @@ export const getNaverCategoryList = async () => {
 // 상품 등록
 export const registerNaverProduct = async (productData) => {
     try {
-        console.log(productData);
         const response = await apiNaverCommerce.post('/naverCommerce/registerNaverProduct', productData);
         return response.data;
     } catch (error) {
         console.error('Naver product register error', error);
+        throw error;
+    }
+};
+
+// 판매자 주소록 조회
+export const getNaverSellerAddressBook = async () => {
+    try {
+        const response = await apiNaverCommerce.get('/naverCommerce/getNaverSellerAddressBook');
+        return response.data;
+    } catch (error) {
+        console.error('Naver seller address book error', error);
         throw error;
     }
 };

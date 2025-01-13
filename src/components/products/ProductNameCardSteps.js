@@ -152,6 +152,7 @@ const ProductNameCardSteps = () => {
                                     <ProductNameCard
                                         key={index}
                                         data={item}
+                                        index={index + 1}
                                         isFocused={index === productNameFocusedIndex}
                                         ref={(el) => (productNameCardRefs.current[index] = el)}
                                         onCardFocus={() => onFocusProductNameCard(index)}
@@ -164,10 +165,15 @@ const ProductNameCardSteps = () => {
                     </Card>
                 </Col>
                 <Col span={12}>
-                    <Affix offsetTop={100}>
+                    <Affix offsetTop={20}>
                         <Card title="추천 상품명">
                             <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
-                                <div className="reco-word-container">{styledRecoProductName}</div>
+                                <div
+                                    className="reco-word-container"
+                                    style={{ maxHeight: '800px', overflowY: 'auto', padding: '10px' }}
+                                >
+                                    {styledRecoProductName}
+                                </div>
                             </Space>
                         </Card>
                     </Affix>

@@ -52,7 +52,6 @@ const ThumbnailUploadCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
                 wholesaleProductId: data.wholesaleProductId,
             };
             const response = await postNaverProductThumbnail(param);
-            console.log('response', response);
             if (response.success) {
                 message.success(response.message);
             } else {

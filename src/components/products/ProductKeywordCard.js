@@ -29,10 +29,6 @@ const ProductKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =>
         }
     }, [data.thumbnail]);
 
-    const fnOnBlur = () => {
-        console.log('데이터 저장');
-    };
-
     return (
         <Space direction="vertical" size="middle" style={{ display: 'block', width: '100%' }}>
             <Row>

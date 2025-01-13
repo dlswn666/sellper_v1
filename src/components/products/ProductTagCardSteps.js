@@ -1,4 +1,4 @@
-import { Col, Empty, Row, Space, message } from 'antd';
+import { Affix, Card, Col, Empty, Row, Space, message } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import { useEffect, useRef, useState } from 'react';
 import { getAutoReco, putProductTag } from '../../apis/productsApi.js';
@@ -161,32 +161,44 @@ const ProductTagCardSteps = () => {
             </Row>
             <Row gutter={16}>
                 <Col span={12}>
-                    <Space
-                        direction="vertical"
-                        size="middle"
-                        style={{ display: 'flex', width: '100%' }}
-                        onKeyDown={handleProductTagKeyDown}
-                        tabIndex={0}
-                    >
-                        {searchData && searchData.length > 0 ? (
-                            searchData.map((item, index) => (
-                                <ProductTagCard
-                                    key={index}
-                                    data={item}
-                                    isFocused={index === productTagFocusedIndex}
-                                    ref={(el) => (productTagCardRefs.current[index] = el)}
-                                    onCardFocus={() => onFocusProductTagCard(index)}
-                                />
-                            ))
-                        ) : (
-                            <Empty description="검색 결과가 없습니다" />
-                        )}
-                    </Space>
+                    <Card title={`작업 상품 목록 (${searchData.length}개)`}>
+                        <Space
+                            direction="vertical"
+                            size="middle"
+                            style={{ display: 'flex', width: '100%' }}
+                            onKeyDown={handleProductTagKeyDown}
+                            tabIndex={0}
+                        >
+                            {searchData && searchData.length > 0 ? (
+                                searchData.map((item, index) => (
+                                    <ProductTagCard
+                                        key={index}
+                                        data={item}
+                                        index={index + 1}
+                                        isFocused={index === productTagFocusedIndex}
+                                        ref={(el) => (productTagCardRefs.current[index] = el)}
+                                        onCardFocus={() => onFocusProductTagCard(index)}
+                                    />
+                                ))
+                            ) : (
+                                <Empty description="검색 결과가 없습니다" />
+                            )}
+                        </Space>
+                    </Card>
                 </Col>
                 <Col span={12}>
-                    <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
-                        <div className="reco-word-container">{styledRecoProductTag}</div>
-                    </Space>
+                    <Affix offsetTop={20}>
+                        <Card title="추천 상품명">
+                            <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
+                                <div
+                                    className="reco-word-container"
+                                    style={{ maxHeight: '800px', overflowY: 'auto', padding: '10px' }}
+                                >
+                                    {styledRecoProductTag}
+                                </div>
+                            </Space>
+                        </Card>
+                    </Affix>
                 </Col>
             </Row>
         </>

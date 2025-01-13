@@ -3,7 +3,7 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } f
 import InputComponent from '../InputComponent.js';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
-const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const ProductNameCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
@@ -40,6 +40,7 @@ const ProductNameCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
             onFocus={onCardFocus}
             tabIndex={0}
             style={{ border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9' }}
+            title={`${index}번 상품 - ${data.productName ? '상품명 설정' : '상품명 미설정'}`}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>

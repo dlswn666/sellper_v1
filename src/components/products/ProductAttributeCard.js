@@ -348,8 +348,6 @@ const ProductNotificationCard = forwardRef(
         };
 
         const updateProductInfoProvidedNoticeContents = (fieldName, value) => {
-            console.log('fieldName', fieldName);
-            console.log('value', value);
             setProductInfoProvidedNoticeContents((prev) => {
                 return prev.map((item) => {
                     if (item.fieldName === fieldName) {
@@ -499,8 +497,6 @@ const ProductNotificationCard = forwardRef(
         };
 
         const renderAttributeField = (attributes, attributeValues) => {
-            console.log('attributes', attributes);
-            console.log('attributeValues', attributeValues);
             return attributes.map((attribute, index) => {
                 if (attribute.attributeClassificationType === 'MULTI_SELECT') {
                     const options =
@@ -607,11 +603,9 @@ const ProductNotificationCard = forwardRef(
                                 }
                                 onChange={(inputValue) => {
                                     setSelectedAttributes((prev) => {
-                                        console.log('prev', prev);
                                         const existingAttr = prev.find(
                                             (attr) => attr.attributeSeq === attribute.attributeSeq
                                         );
-                                        console.log('attribute.attributeSeq', attribute.attributeSeq);
                                         if (!inputValue) {
                                             return prev.filter((attr) => attr.attributeSeq !== attribute.attributeSeq);
                                         }
@@ -762,10 +756,6 @@ const ProductNotificationCard = forwardRef(
         }, [isFlipped]);
 
         const handleSave = () => {
-            console.log('certificationList', certificationList);
-            console.log('selectedAttributes', selectedAttributes);
-            console.log('originArea', originArea);
-            console.log('productInfoProvidedNoticeContents', productInfoProvidedNoticeContents);
             const params = {
                 wholesaleProductId: data.wholesaleProductId,
                 certificationList,
@@ -991,15 +981,6 @@ const ProductNotificationCard = forwardRef(
                                                 />
                                             </div>
                                         </Col>
-                                        <Col span={24}>
-                                            <div className="attribute-input-group">
-                                                <Text type="secondary">인증 정보</Text>
-                                                {renderNaverProductForProvidedNotice()}
-                                                {renderProductInfoProvidedNoticeContents(
-                                                    productInfoProvidedNoticeContents
-                                                )}
-                                            </div>
-                                        </Col>
                                         <Col span={2} style={{ display: 'flex', alignItems: 'center' }}>
                                             <Button
                                                 type="text"
@@ -1011,6 +992,17 @@ const ProductNotificationCard = forwardRef(
                                         </Col>
                                     </Row>
                                 ))}
+                                <Divider className="divider" />
+                                <Row>
+                                    <Col span={24}>
+                                        <div className="attribute-input-group">
+                                            <Text type="secondary">인증 정보</Text>
+                                            {renderNaverProductForProvidedNotice()}
+                                            <Divider className="divider" style={{ margin: '16px 0' }} />
+                                            {renderProductInfoProvidedNoticeContents(productInfoProvidedNoticeContents)}
+                                        </div>
+                                    </Col>
+                                </Row>
                             </>
                         </div>
                         <div className="action-buttons">

@@ -3,7 +3,7 @@ import { Card, Image, Space, Row, Col, Divider, Tag, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
-const ProductCategoryCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const ProductCategoryCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
     const [localData, setLocalData] = useState(data);
     const cardRef = useRef(null);
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -61,6 +61,7 @@ const ProductCategoryCard = forwardRef(({ data, isFocused, onCardFocus }, ref) =
             }}
             onClick={onCardFocus}
             tabIndex={0}
+            title={`${index}번 상품`}
         >
             {isLoading && (
                 <div

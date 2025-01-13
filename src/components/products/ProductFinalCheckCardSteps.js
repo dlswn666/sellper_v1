@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getFinalProductData } from '../../apis/productsApi.js';
-import { registerNaverProduct } from '../../apis/naverCommerceApi.js';
+import { registerNaverProduct, getNaverSellerAddressBook } from '../../apis/naverCommerceApi.js';
 import { Row, Col, Card, Empty, Space, Affix, Image, Button, Divider, Typography, Input } from 'antd';
 import ProductFinalCheckCard from './ProductFinalCheckCard.js';
 import Search from 'antd/es/input/Search.js';
@@ -57,8 +57,8 @@ const ProductFinalCheckCardSteps = () => {
                 productId,
                 searchTerm: value,
             });
+            const sellerAddressBook = await getNaverSellerAddressBook();
             const result = response || [];
-
             if (!isLoadMore) {
                 setFinalProductData(result);
             } else {
@@ -110,8 +110,6 @@ const ProductFinalCheckCardSteps = () => {
         setTitleProductName(finalProductData[index]?.productName);
 
         const productCat = finalProductData[index]?.productCategory || {};
-        console.log(finalProductData[index]);
-
         const formattedCategories = {
             naverCategory: formatCategory(productCat.naver || []),
             coupangCategory: formatCategory(productCat.coupang || []),
@@ -169,9 +167,7 @@ const ProductFinalCheckCardSteps = () => {
     };
 
     const onRegisterNaverProduct = async () => {
-        console.log(detailProduct);
         const response = await registerNaverProduct(detailProduct);
-        console.log(response);
     };
 
     return (

@@ -268,7 +268,6 @@ export const getDeliveryCompanies = async () => {
 // 상품 상세 정보 저장
 export const postProductAttribute = async (data) => {
     let reqUrl = `/api/postProductAttribute`;
-    console.log('data - postProductAttribute', data);
     try {
         const response = await apiProducts.post(reqUrl, data);
         return response.data;
@@ -288,16 +287,7 @@ export const postProductThumbnail = async (data) => {
     };
 
     try {
-        // FormData 내용 디버깅
-        console.log('FormData entries:');
-        for (let pair of data.entries()) {
-            console.log(pair[0], pair[1]);
-        }
-
         const response = await apiProducts.post(reqUrl, data, config);
-
-        // 응답 데이터 디버깅
-        console.log('서버 응답:', response);
 
         if (!response.data.success) {
             throw new Error(response.data.message || '이미지 업로드 실패');

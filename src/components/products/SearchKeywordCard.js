@@ -5,7 +5,7 @@ import '../../css/cardData.css';
 import '../../css/ImagePreview.css';
 import { putSearchWord } from '../../apis/productsApi.js';
 
-const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const SearchKeywordCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
     const [localData, setLocalData] = useState(structuredClone(data));
@@ -57,6 +57,7 @@ const SearchKeywordCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => 
             style={{ width: '100%', border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9' }}
             onFocus={onCardFocus}
             tabIndex={0}
+            title={`${index}번 상품 - ${localData.searchWord ? '검색 키워드 설정' : '검색 키워드 미설정'}`}
         >
             <Image.PreviewGroup
                 items={localData.thumbnail && localData.thumbnail.length > 0 ? localData.thumbnail : [defaultImage]}

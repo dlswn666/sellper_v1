@@ -3,7 +3,7 @@ import { Card, Row, Col, Divider, Image, Space } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/ImagePreview.css';
 
-const ProductOptionPriceCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
     const cardRef = useRef(null);
     const [localData, setLocalData] = useState(data);
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
@@ -47,6 +47,7 @@ const ProductOptionPriceCard = forwardRef(({ data, isFocused, onCardFocus }, ref
                 width: '100%',
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
             }}
+            title={`${index}번 상품 - ${data.productName ? '상품명 설정' : '상품명 미설정'}`}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>

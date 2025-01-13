@@ -119,14 +119,14 @@ const ProductCategoryCardSteps = () => {
         setRecommendedSelectedCategory(null);
 
         const currentProduct = searchData[index];
-        if (currentProduct?.naver_recoCate) {
-            try {
-                // 추천 카테고리 데이터 처리
-                console.log(currentProduct);
-            } catch (error) {
-                console.error('카테고리 파싱 에러:', error);
-            }
-        }
+        // if (currentProduct?.naver_recoCate) {
+        //     try {
+        //         // 추천 카테고리 데이터 처리
+        //         console.log(currentProduct);
+        //     } catch (error) {
+        //         console.error('카테고리 파싱 에러:', error);
+        //     }
+        // }
     };
 
     const handleTabChange = (key) => {
@@ -320,7 +320,7 @@ const ProductCategoryCardSteps = () => {
                                     <ProductCategoryCard
                                         key={item.workingProductId}
                                         data={item}
-                                        index={index}
+                                        index={index + 1}
                                         isFocused={index === productCategoryFocusedIndex}
                                         ref={(el) => (productCategoryCardRefs.current[index] = el)}
                                         onCardFocus={() => onFocusProductCategoryCard(index)}

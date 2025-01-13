@@ -115,10 +115,18 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
         try {
             const result = await getPlatformPriceById(productId);
             result.forEach((price) => {
+                // 판매가를 100원 단위로 올림 처리
+                price.salePrice = Math.ceil(price.salePrice / 100) * 100 + price.discountPrice;
                 price.discountPercent = Math.round((price.discountPrice / price.salePrice) * 100);
                 price.taxPercent = Math.round(price.taxPercent * 100);
                 price.marginPercent = Math.round(price.marginPercent * 100);
                 price.platformPercent = Math.round(price.platformPercent * 100);
+                price.marginPrice =
+                    price.salePrice -
+                    price.discountPrice -
+                    price.taxPrice -
+                    price.platformPrice -
+                    Number(price.wholesaleProductPrice);
                 price.finalPrice = price.salePrice - price.discountPrice;
                 price.finalProfitPrice =
                     price.salePrice -
@@ -174,6 +182,11 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
         const price = newPlatformPrices[index];
 
         // 자신 필드는 계산하지 않는다
+
+        // 판매가를 100원 단위로 올림 처리
+        if (field === 'salePrice') {
+            price.salePrice = Math.ceil(price.salePrice / 100) * 100;
+        }
 
         // 1. 할인가 계산
         if (field !== 'discountPrice') {
@@ -367,6 +380,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                     <ProductPriceCard
                                         key={item.workingProductId}
                                         data={item}
+                                        index={index + 1}
                                         isFocused={index === productPriceFocusedIndex}
                                         ref={(el) => (productPriceCardRefs.current[index] = el)}
                                         onCardFocus={() => onFocusProductPriceCard(index)}
@@ -731,7 +745,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                                         value={
                                                                             price.reviewPointText
                                                                                 ? price.reviewPointText
-                                                                                : 0
+                                                                                : 10
                                                                         }
                                                                         style={{ width: '100%' }}
                                                                         onChange={(value) =>
@@ -751,7 +765,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                                         value={
                                                                             price.reviewPointPhoto
                                                                                 ? price.reviewPointPhoto
-                                                                                : 0
+                                                                                : 50
                                                                         }
                                                                         style={{ width: '100%' }}
                                                                         onChange={(value) =>
@@ -773,7 +787,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                                         value={
                                                                             price.reviewPointTextMonth
                                                                                 ? price.reviewPointTextMonth
-                                                                                : 0
+                                                                                : 10
                                                                         }
                                                                         style={{ width: '100%' }}
                                                                         onChange={(value) =>
@@ -795,7 +809,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                                         value={
                                                                             price.reviewPointPhotoMonth
                                                                                 ? price.reviewPointPhotoMonth
-                                                                                : 0
+                                                                                : 50
                                                                         }
                                                                         style={{ width: '100%' }}
                                                                         onChange={(value) =>

@@ -113,6 +113,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
                                     <SearchKeywordCard
                                         key={index}
                                         data={item}
+                                        index={index + 1}
                                         isFocused={index === searchKeywordFocusedIndex}
                                         ref={(el) => (searchKeywordCardRefs.current[index] = el)}
                                         onCardFocus={() => onFocusSearchKeywordCard(index)}

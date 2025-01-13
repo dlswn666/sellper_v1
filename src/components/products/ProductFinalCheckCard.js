@@ -19,7 +19,6 @@ const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus }, ref)
         if (isFocused && cardRef.current) {
             cardRef.current.focus();
         }
-        console.log(isFocused);
     }, [isFocused]);
 
     return (

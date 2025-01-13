@@ -6,7 +6,7 @@ const formatKRW = (number) => {
     return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
-const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChange }, ref) => {
+const ProductPriceCard = forwardRef(({ data, index, isFocused, onCardFocus, onPriceChange }, ref) => {
     const [localData, setLocalData] = useState(data);
     const cardRef = useRef(null);
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
@@ -14,7 +14,6 @@ const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChan
     const [price, setPrice] = useState(data.platformPrices?.[0]?.finalPrice || 0);
 
     useEffect(() => {
-        console.log('price data', data);
         setLocalData(data);
         const urls = data.thumbnail?.map((item) => item.thumbNailUrl) || [];
         setThumbNailUrl(urls);
@@ -49,6 +48,7 @@ const ProductPriceCard = forwardRef(({ data, isFocused, onCardFocus, onPriceChan
             }}
             onClick={onCardFocus}
             tabIndex={0}
+            title={`${index}번 상품 - ${data.productPrice ? '판매가 설정' : '판매가 미설정'}`}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>

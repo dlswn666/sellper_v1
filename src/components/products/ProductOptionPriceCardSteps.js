@@ -212,6 +212,7 @@ const ProductOptionPriceCardSteps = () => {
         setSearchLoading(true);
         try {
             const response = await getProductOption(productId, 100, isLoadMore ? page : 1);
+            console.log('response', response);
             if (!isLoadMore) {
                 setProductOptionData(response.data);
                 setProductOptionFocusedIndex(0);
@@ -353,6 +354,7 @@ const ProductOptionPriceCardSteps = () => {
                                     <ProductOptionPriceCard
                                         key={item.productOptionId}
                                         data={item}
+                                        index={index + 1}
                                         isFocused={productOptionFocusedIndex === index}
                                         onCardFocus={() => onFocusProductOptionCard(index)}
                                         ref={(el) => (productOptionCardRefs.current[index] = el)}
@@ -652,7 +654,7 @@ const ProductOptionPriceCardSteps = () => {
                                                                 <div className="price-input-group">
                                                                     <Text type="secondary">옵션 가격</Text>
                                                                     <Input
-                                                                        value={option.optionPrice}
+                                                                        value={parseInt(option.optionPrice)}
                                                                         onChange={(e) =>
                                                                             handleOptionSettingChange(
                                                                                 option.optionId,
