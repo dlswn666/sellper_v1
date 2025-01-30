@@ -1,4 +1,4 @@
-import { Card, Image, Space, Row, Col, Divider, Input, message } from 'antd';
+import { Card, Image, Row, Col, Divider, Input, message } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/cardData.css';
@@ -6,6 +6,7 @@ import '../../css/ImagePreview.css';
 import { putSearchWord } from '../../apis/productsApi.js';
 
 const SearchKeywordCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
+    const [thumbNailUrl, setThumbNailUrl] = useState([]);
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
     const [localData, setLocalData] = useState(structuredClone(data));
@@ -24,6 +25,13 @@ const SearchKeywordCard = forwardRef(({ data, index, isFocused, onCardFocus }, r
             inputRef.current.focus();
         }
     }, [isFocused]);
+
+    useEffect(() => {
+        if (data.thumbnail && Array.isArray(data.thumbnail)) {
+            const urls = data.thumbnail.map((item) => item.thumbNailUrl);
+            setThumbNailUrl(urls);
+        }
+    }, [data.thumbnail]);
 
     const onKeyDown = async (e) => {
         if (e.key === 'Enter') {
@@ -59,9 +67,7 @@ const SearchKeywordCard = forwardRef(({ data, index, isFocused, onCardFocus }, r
             tabIndex={0}
             title={`${index}번 상품 - ${localData.searchWord ? '검색 키워드 설정' : '검색 키워드 미설정'}`}
         >
-            <Image.PreviewGroup
-                items={localData.thumbnail && localData.thumbnail.length > 0 ? localData.thumbnail : [defaultImage]}
-            >
+            <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>
                     <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
                     <div style={{ marginLeft: 16, flex: 1 }}>

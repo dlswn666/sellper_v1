@@ -30,7 +30,7 @@ const ProductOptionPriceCardSteps = () => {
 
     useEffect(() => {
         if (page > 1 && !searchLoading) {
-            getProductOptionData();
+            getProductOptionData(searchTerm, true);
         }
     }, [page]);
 
@@ -207,19 +207,20 @@ const ProductOptionPriceCardSteps = () => {
         getProductOptionData(value);
     };
 
-    const getProductOptionData = async (productId, isLoadMore = false) => {
+    const getProductOptionData = async (productId = '', isLoadMore = false) => {
         if (searchLoading) return;
         setSearchLoading(true);
+        let limit = 10;
         try {
-            const response = await getProductOption(productId, 100, isLoadMore ? page : 1);
-            console.log('response', response);
+            const response = await getProductOption(productId, limit, isLoadMore ? page : 1);
+            const result = response.data || [];
             if (!isLoadMore) {
-                setProductOptionData(response.data);
+                setProductOptionData(result);
                 setProductOptionFocusedIndex(0);
             } else {
-                setProductOptionData((prev) => [...prev, ...response.data]);
+                setProductOptionData((prev) => [...prev, ...result]);
             }
-            setHasMore(response.data.length >= 100);
+            setHasMore(result.length >= limit);
         } catch (error) {
             console.error('Error fetching product option data:', error);
             setHasMore(false);

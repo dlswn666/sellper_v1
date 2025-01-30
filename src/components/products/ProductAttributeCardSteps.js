@@ -1,16 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Row, Col, Space, Empty, Card, Affix, Image } from 'antd';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Row, Col, Space, Empty, Card, Affix } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import ProductAttributeCard from './ProductAttributeCard.js';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 import { getProductAttributeData, getProductDetailImage } from '../../apis/productsApi.js';
-import {
-    getProductAttributeValues,
-    getProductAttributes,
-    getNaverCategory,
-    getNaverProductForProvidedNotice,
-} from '../../apis/naverCommerceApi.js';
-import { resetScroll } from '../../utils/scrollUtils.js';
 
 const ProductAttributeCardSteps = () => {
     const [attributeData, setAttributeData] = useState([]);
@@ -21,130 +14,22 @@ const ProductAttributeCardSteps = () => {
     const [hasMore, setHasMore] = useState(true);
     const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
     const attributeCardRefs = useRef([]);
-    const [attributes, setAttributes] = useState([]);
-    const [attributeValues, setAttributeValues] = useState([]);
     const [detailImage, setDetailImage] = useState([]);
-    const [naverCategory, setNaverCategory] = useState([]);
     const [flippedCardIndex, setFlippedCardIndex] = useState(null);
-    const [categoryCache, setCategoryCache] = useState({});
-    const [naverProductForProvidedNotice, setNaverProductForProvidedNotice] = useState([]);
-
-    useEffect(() => {
-        onSearch();
-    }, []);
-
-    useEffect(() => {
-        if (page > 1 && !searchLoading) {
-            onSearch(searchTerm, true);
-        }
-    }, [page]);
-
-    useEffect(() => {
-        if (attributeData && attributeData.length > 0) {
-            initializeFirstCard();
-        }
-    }, [attributeData]);
-
-    const initializeFirstCard = () => {
-        setTimeout(() => {
-            attributeCardRefs.current[0]?.focusInput();
-            onFocusAttributeCard(0);
-        }, 100);
-    };
-
-    const handleSearch = (value) => {
-        setSearchTerm(value);
-        setHasMore(true);
-        setAttributeData([]);
-        setPage(1);
-        onSearch(value);
-    };
-
-    const onSearch = async (productId = '', search = searchTerm, isLoadMore = false) => {
-        if (searchLoading) return;
-        setSearchLoading(true);
-
-        try {
-            const result = await getProductAttributeData(productId, search, isLoadMore ? page : 1, 100);
-            if (!isLoadMore) {
-                setAttributeData(result);
-                setAttributeFocusedIndex(0);
-            } else {
-                setAttributeData((prev) => [...prev, ...result]);
-            }
-            setHasMore(result.length >= 100);
-        } catch (error) {
-            console.error('Error fetching attributes:', error);
-            setHasMore(false);
-        } finally {
-            setLoading(false);
-            setSearchLoading(false);
-        }
-    };
+    const [offset, setOffset] = useState(0);
+    const [isSaved, setIsSaved] = useState(false);
+    const [limit, setLimit] = useState(10);
+    const [totalCount, setTotalCount] = useState(0);
 
     const onFocusAttributeCard = async (index) => {
-        if (index === prevIndex) return;
+        if (index === prevIndex && !isSaved) return;
+        console.log('index', index);
 
-        setPrevIndex(index);
         setAttributeFocusedIndex(index);
+        setPrevIndex(index);
 
-        const detailImageContainer = document.querySelector('.detail-image-container');
-        if (detailImageContainer) {
-            detailImageContainer.scrollTo({
-                top: 0,
-                behavior: 'smooth',
-            });
-        }
-
-        const categoryId = attributeData[index]?.naver_recoCate_id[0];
         const wholesaleProductId = attributeData[index]?.wholesaleProductId;
-
-        // 카테고리 ID
-        const naverRecoCateId1 = categoryId.categoryId1;
-        const naverRecoCateId2 = categoryId.categoryId2;
-        const naverRecoCateId3 = categoryId.categoryId3;
-        const naverRecoCateId4 = categoryId.categoryId4;
-        const naverRecoCateId5 = categoryId.categoryId5;
-
-        let lastCategoryId =
-            naverRecoCateId5 || naverRecoCateId4 || naverRecoCateId3 || naverRecoCateId2 || naverRecoCateId1 || '';
-
-        const naverProductForProvidedNotice = await getNaverProductForProvidedNotice(lastCategoryId);
-        setNaverProductForProvidedNotice(naverProductForProvidedNotice);
-
-        if (lastCategoryId) {
-            if (categoryCache[lastCategoryId]) {
-                const { attributes, attributeValues, naverCategory } = categoryCache[lastCategoryId];
-                setAttributes(attributes);
-                setAttributeValues(attributeValues);
-                setNaverCategory(naverCategory);
-            } else {
-                try {
-                    const [attribute, attributeValues, naverProductForProvidedNotice, getNaverCategoryData] =
-                        await Promise.all([
-                            getProductAttributes(lastCategoryId),
-                            getProductAttributeValues(lastCategoryId),
-                            getNaverProductForProvidedNotice(naverRecoCateId1),
-                            getNaverCategory(lastCategoryId),
-                        ]);
-
-                    setCategoryCache((prev) => ({
-                        ...prev,
-                        [lastCategoryId]: {
-                            attributes: attribute,
-                            attributeValues,
-                            naverCategory: getNaverCategoryData,
-                        },
-                    }));
-
-                    setAttributes(attribute);
-                    setAttributeValues(attributeValues);
-                    setNaverCategory(getNaverCategoryData);
-                } catch (error) {
-                    console.error('Error fetching attributes:', error);
-                }
-            }
-        }
+        console.log('wholesaleProductId', wholesaleProductId);
 
         if (wholesaleProductId) {
             try {
@@ -153,6 +38,106 @@ const ProductAttributeCardSteps = () => {
             } catch (error) {
                 console.error('Error fetching detail image:', error);
             }
+        }
+    };
+
+    useEffect(() => {
+        if (attributeData && attributeData.length > 0) {
+            onFocusAttributeCard(attributeFocusedIndex);
+        }
+    }, [attributeFocusedIndex, attributeData]);
+
+    // const initializeFirstCard = useCallback(() => {
+    //     setTimeout(() => {
+    //         attributeCardRefs.current[0]?.focusInput();
+    //         onFocusAttributeCard(0);
+    //     }, 100);
+    // }, [onFocusAttributeCard]);
+
+    // useEffect(() => {
+    //     if (attributeData && attributeData.length > 0) {
+    //         initializeFirstCard();
+    //     }
+    // }, [attributeData, initializeFirstCard]);
+
+    useEffect(() => {
+        onSearch();
+    }, []);
+
+    useEffect(() => {
+        if (page > 1 && !searchLoading) {
+            onSearch('', searchTerm, true);
+        }
+    }, [page]);
+
+    useEffect(() => {
+        if (attributeFocusedIndex >= 0 && attributeCardRefs.current[attributeFocusedIndex]) {
+            attributeCardRefs.current[attributeFocusedIndex]?.focusInput();
+        }
+    }, [attributeFocusedIndex]);
+
+    const handleSearch = (value) => {
+        setSearchTerm(value);
+        setHasMore(true);
+        setAttributeData([]);
+        setPage(1);
+        onSearch('', value, true, 1);
+    };
+
+    const handleSaveSuccess = async (savedProductId) => {
+        const savedItemIndex = attributeData.findIndex((item) => item.wholesaleProductId === savedProductId);
+        if (savedItemIndex === -1) return;
+
+        try {
+            const newData = await getProductAttributeData('', '', 1, 1, 'attributeSaved', offset);
+            setAttributeData((prevData) => {
+                const newArray = [...prevData];
+                newArray.splice(savedItemIndex, 1);
+
+                if (newData && newData.length > 0) {
+                    newArray.push(...newData);
+                }
+                return newArray;
+            });
+
+            setOffset((prev) => prev + 1);
+            setIsSaved(true);
+            onFocusAttributeCard(attributeFocusedIndex);
+        } catch (error) {
+            console.error('Error fetching attributes:', error);
+        }
+    };
+
+    const onSearch = async (productId = '', search = searchTerm, isLoadMore = false, currentPage = page) => {
+        if (searchLoading) return;
+        setSearchLoading(true);
+        setIsSaved(false);
+        try {
+            const result = await getProductAttributeData(
+                productId,
+                search,
+                isLoadMore ? currentPage : 1,
+                limit,
+                'attribute'
+            );
+            setTotalCount(result[0].total_count);
+            if (!isLoadMore) {
+                setAttributeData(result);
+                setOffset(limit);
+            } else {
+                setAttributeData((prev) => [...prev, ...result]);
+                setOffset((prev) => prev + result.length);
+            }
+            if (currentPage === 1) {
+                setAttributeFocusedIndex(0);
+            }
+            setHasMore(result.length >= limit);
+        } catch (error) {
+            console.error('Error fetching attributes:', error);
+            setHasMore(false);
+        } finally {
+            setLoading(false);
+            setSearchLoading(false);
         }
     };
 
@@ -169,28 +154,28 @@ const ProductAttributeCardSteps = () => {
                         enterButton="Search"
                         size="large"
                         loading={searchLoading}
-                        onSearch={handleSearch}
+                        onSearch={(value) => handleSearch(value)}
                     />
                 </Col>
             </Row>
             <Row gutter={16}>
                 <Col span={12}>
-                    <Card title={`작업 상품 목록 (${attributeData.length}개)`}>
+                    <Card title={`조회 작업 상품 : ${attributeData.length}개 / 총 작업 상품 : ${totalCount} 개`}>
                         <Space direction="vertical" size="middle" style={{ display: 'flex', width: '100%' }}>
                             {attributeData?.length > 0 ? (
                                 attributeData.map((item, index) => (
                                     <ProductAttributeCard
-                                        key={item.productId}
+                                        key={`${item.productId}-${index}`}
                                         data={item}
+                                        index={index}
                                         isFocused={index === attributeFocusedIndex}
                                         ref={(el) => (attributeCardRefs.current[index] = el)}
                                         onCardFocus={() => onFocusAttributeCard(index)}
-                                        attributeValues={attributeValues}
-                                        attributes={attributes}
-                                        naverProductForProvidedNotice={naverProductForProvidedNotice}
-                                        naverCategory={naverCategory}
                                         isFlipped={index === flippedCardIndex}
                                         onFlip={() => handleCardFlip(index)}
+                                        onSaveSuccess={handleSaveSuccess}
+                                        offset={offset}
+                                        limit={limit}
                                     />
                                 ))
                             ) : (

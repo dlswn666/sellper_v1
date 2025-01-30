@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Row, Col, Space, Empty, Card, Image, Affix } from 'antd';
+import { Row, Col, Empty, Card, Affix } from 'antd';
 import Search from 'antd/es/input/Search.js';
 import SearchKeywordCard from './SearchKeywordCard.js';
 import { selectWorkingSearchWord } from '../../apis/productsApi.js';
@@ -28,11 +28,11 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
 
     const onSearch = async (value = searchTerm, isLoadMore = false) => {
         if (searchLoading) return;
-
+        let limit = 10;
         setSearchLoading(true);
 
         try {
-            const response = await selectWorkingSearchWord(value, isLoadMore ? page : 1);
+            const response = await selectWorkingSearchWord(value, isLoadMore ? page : 1, limit);
             const { result: wspData, total: totalCount } = response;
 
             if (!isLoadMore) {
@@ -42,7 +42,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
                 setSearchData((prevData) => [...prevData, ...wspData]);
             }
             if (wspData && searchData) {
-                if (wspData.length < 50 || searchData.length + wspData.length >= totalCount) {
+                if (wspData.length < limit || searchData.length + wspData.length >= totalCount) {
                     setHasMore(false);
                 }
             }
@@ -86,8 +86,8 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
     };
 
     return (
-        <>
-            <Row>
+        <div style={{ padding: '24px' }}>
+            <Row style={{ marginBottom: '16px' }}>
                 <Col span={24}>
                     <Search
                         placeholder="상품 검색어를 입력해 주세요"
@@ -101,10 +101,9 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
             <Row gutter={16} style={{ marginTop: '16px' }}>
                 <Col span={12} className="gutter-row">
                     <Card title={`상품수 (${searchData && searchData.length ? searchData.length : 0}개)`}>
-                        <Space
-                            direction="vertical"
-                            size={'middle'}
-                            style={{ display: 'flex' }}
+                        <div
+                            className="search-keyword-list"
+                            style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}
                             onKeyDown={handleSearchKeywordKeyDown}
                             tabIndex={0}
                         >
@@ -122,7 +121,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
                             ) : (
                                 <Empty />
                             )}
-                        </Space>
+                        </div>
                     </Card>
                 </Col>
                 <Col span={12} className="getter-row">
@@ -138,7 +137,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
                     </Affix>
                 </Col>
             </Row>
-        </>
+        </div>
     );
 };
 

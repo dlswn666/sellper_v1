@@ -88,13 +88,13 @@ export const putProductName = async (data) => {
 };
 
 // 상품 태그 업데이트
-export const putProductTag = async (data) => {
-    let reqUrl = `/api/putProductTag`;
+export const postProductTag = async (data) => {
+    let reqUrl = `/api/postProductTag`;
     try {
-        const response = await apiProducts.put(reqUrl, data);
-        return response;
+        const response = await apiProducts.post(reqUrl, data);
+        return response.data;
     } catch (error) {
-        console.error('Error put putProductTag : ', error);
+        console.error('Error post postProductTag : ', error);
         throw error;
     }
 };
@@ -181,8 +181,11 @@ export const putPlatformPrice = async (data) => {
 };
 
 // 상품 속성 데이터 조회
-export const getProductAttributeData = async (productId, search, page = 1, limit = 100, flag = '') => {
-    const offset = (page - 1) * limit;
+export const getProductAttributeData = async (productId, search, page = 1, limit = 100, flag = '', paramOffset = 0) => {
+    let offset = (page - 1) * limit;
+    if (flag === 'attributeSaved') {
+        offset = paramOffset;
+    }
     let reqUrl = `/api/getProductAttributeData?limit=${limit}&offset=${offset}&flag=${flag}`;
     if (productId) {
         reqUrl += `&productId=${productId}`;
@@ -192,6 +195,7 @@ export const getProductAttributeData = async (productId, search, page = 1, limit
     }
     try {
         const response = await apiProducts.get(reqUrl);
+        console.log('response', response);
         return response.data;
     } catch (error) {
         console.error('Error fetching product attribute data:', error);
@@ -219,6 +223,7 @@ export const getProductOption = async (productId, limit = 100, page = 1) => {
     if (productId) {
         reqUrl += `&productId=${productId}`;
     }
+    console.log('getProductOption', reqUrl);
     try {
         const response = await apiProducts.get(reqUrl);
         return response;
@@ -323,6 +328,8 @@ export const getFinalProductData = async (param) => {
         reqUrl += `&searchTerm=${searchTerm}`;
     }
 
+    console.log('reqUrl****************************', reqUrl);
+
     try {
         const response = await apiProducts.get(reqUrl);
         return response.data;
@@ -340,6 +347,43 @@ export const postNaverProductThumbnail = async (data) => {
         return response.data;
     } catch (error) {
         console.error('Error posting naver product thumbnail:', error);
+        throw error;
+    }
+};
+
+// 썸네일 삭제
+export const deleteProductThumbnail = async (imgId) => {
+    let reqUrl = `/api/deleteProductThumbnail?imgId=${imgId}`;
+    try {
+        const response = await apiProducts.delete(reqUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting product thumbnail:', error);
+        throw error;
+    }
+};
+
+// 상품 상태 업데이트
+export const putProductStage = async (data) => {
+    let reqUrl = `/api/putProductStage`;
+    try {
+        const response = await apiProducts.put(reqUrl, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error putting product stage:', error);
+        throw error;
+    }
+};
+
+// 태그 저장
+export const putProductTag = async (data) => {
+    let reqUrl = `/api/putProductTag`;
+    console.log('data****************************', data);
+    try {
+        const response = await apiProducts.put(reqUrl, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error putting product tag:', error);
         throw error;
     }
 };

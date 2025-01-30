@@ -4,7 +4,6 @@ import {
     Row,
     Col,
     Divider,
-    Space,
     Image,
     Input,
     Checkbox,
@@ -14,11 +13,19 @@ import {
     InputNumber,
     Typography,
     DatePicker,
+    Empty,
+    message,
 } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/ProductAttributeCard.css';
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { postProductAttribute } from '../../apis/productsApi.js';
+import {
+    getProductAttributeValues,
+    getProductAttributes,
+    getNaverCategory,
+    getNaverProductForProvidedNotice,
+} from '../../apis/naverCommerceApi.js';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
@@ -276,21 +283,8 @@ const naverUnitList = [
     { value: 'A02253', label: '환' },
 ];
 
-const ProductNotificationCard = forwardRef(
-    (
-        {
-            data,
-            isFocused,
-            onCardFocus,
-            attributeValues,
-            attributes,
-            naverCategory,
-            isFlipped,
-            onFlip,
-            naverProductForProvidedNotice,
-        },
-        ref
-    ) => {
+const ProductAttributeCard = forwardRef(
+    ({ data, index, isFocused, onCardFocus, isFlipped, onFlip, onSaveSuccess, offset, limit }, ref) => {
         const cardRef = useRef(null);
         const carouselRef = useRef(null);
         const [thumbNailUrl, setThumbNailUrl] = useState([]);
@@ -301,11 +295,28 @@ const ProductNotificationCard = forwardRef(
         const [productInfoProvidedNoticeContents, setProductInfoProvidedNoticeContents] = useState([]);
         const [productInfoProvidedNoticeType, setProductInfoProvidedNoticeType] = useState('');
         const [productInfoProvidedNoticeTypeName, setProductInfoProvidedNoticeTypeName] = useState('');
+        const [attributes, setAttributes] = useState([]);
+        const [attributeValues, setAttributeValues] = useState([]);
+        const [naverCategory, setNaverCategory] = useState([]);
+        const [naverProductForProvidedNotice, setNaverProductForProvidedNotice] = useState([]);
 
         useEffect(() => {
             const urls = data.thumbnail?.map((item) => item.thumbNailUrl) || [];
             setThumbNailUrl(urls);
         }, [data, data.thumbnail]);
+
+        useEffect(() => {
+            if (naverProductForProvidedNotice && naverProductForProvidedNotice.length > 0) {
+                const etcItem = naverProductForProvidedNotice.find(
+                    (item) => item.productInfoProvidedNoticeType === 'ETC'
+                );
+                if (etcItem) {
+                    setProductInfoProvidedNoticeType('ETC');
+                    setProductInfoProvidedNoticeTypeName(etcItem.productInfoProvidedNoticeTypeName);
+                    setProductInfoProvidedNoticeContents(etcItem.productInfoProvidedNoticeContents);
+                }
+            }
+        }, [naverProductForProvidedNotice]);
 
         useEffect(() => {
             if (productInfoProvidedNoticeContents?.length > 0) {
@@ -321,6 +332,10 @@ const ProductNotificationCard = forwardRef(
                             initialValue = '인영상회 협력사';
                         } else if (item.fieldName === 'certificateDetails') {
                             initialValue = '상세페이지 참조';
+                        } else if (item.fieldName === 'itemName') {
+                            initialValue = data.wholeProductName;
+                        } else if (item.fieldName === 'modelName') {
+                            initialValue = data.wholeProductName;
                         }
 
                         if (initialValue) {
@@ -334,6 +349,51 @@ const ProductNotificationCard = forwardRef(
                 });
             }
         }, [productInfoProvidedNoticeContents]);
+
+        const handleNextSlide = async () => {
+            const categoryNum = data.naverCategoryNum;
+
+            let tempAttributes = [],
+                tempAttributeValues = [],
+                tempNaverCategory = [],
+                tempNaverProductForProvidedNotice = [];
+
+            try {
+                tempAttributes = await getProductAttributes(categoryNum);
+                console.log('tempAttributes****************************', tempAttributes);
+            } catch (error) {
+                console.log('상품 속성 조회 실패:', error);
+            }
+
+            try {
+                tempAttributeValues = await getProductAttributeValues(categoryNum);
+                console.log('tempAttributeValues****************************', tempAttributeValues);
+            } catch (error) {
+                console.log('상품 속성값 조회 실패:', error);
+            }
+
+            try {
+                tempNaverCategory = await getNaverCategory(categoryNum);
+            } catch (error) {
+                console.log('네이버 카테고리 조회 실패:', error);
+            }
+
+            try {
+                tempNaverProductForProvidedNotice = await getNaverProductForProvidedNotice(categoryNum);
+            } catch (error) {
+                console.log('네이버 상품 제공 공지 조회 실패:', error);
+            }
+
+            setAttributes(tempAttributes);
+            setAttributeValues(tempAttributeValues);
+            setNaverCategory(tempNaverCategory);
+            setNaverProductForProvidedNotice(tempNaverProductForProvidedNotice);
+
+            setTimeout(() => {
+                carouselRef.current.next();
+                onFlip();
+            }, 0);
+        };
 
         useImperativeHandle(ref, () => ({
             focusInput: () => {
@@ -479,11 +539,18 @@ const ProductNotificationCard = forwardRef(
                     value: item.productInfoProvidedNoticeType,
                 });
             });
+
+            // naverProductForProvidedNotice가 로드되지 않았다면 렌더링하지 않음
+            if (!naverProductForProvidedNotice || naverProductForProvidedNotice.length === 0) {
+                return null;
+            }
+
             return (
                 <Select
                     style={{ width: '100%' }}
                     placeholder="네이버 제공 정보 선택"
                     options={options}
+                    value={productInfoProvidedNoticeType || 'ETC'} // defaultValue 대신 value 사용
                     onChange={(value) => {
                         const selectedItem = naverProductForProvidedNotice.find(
                             (item) => item.productInfoProvidedNoticeType === value
@@ -497,10 +564,27 @@ const ProductNotificationCard = forwardRef(
         };
 
         const renderAttributeField = (attributes, attributeValues) => {
+            if (!Array.isArray(attributes) || attributes.length === 0) {
+                console.log('유효하지 않은 attributes:', attributes);
+                return null;
+            }
+
+            if (!attributeValues || Object.keys(attributeValues).length === 0) {
+                console.log('유효하지 않은 attributeValues:', attributeValues);
+                return null;
+            }
+
             return attributes.map((attribute, index) => {
+                const currentAttributeValues = attributeValues[attribute.attributeSeq];
+
+                if (!currentAttributeValues) {
+                    console.log(`attribute ${index}에 대한 values가 없음`);
+                    return null;
+                }
+
                 if (attribute.attributeClassificationType === 'MULTI_SELECT') {
                     const options =
-                        attributeValues[attribute.attributeSeq]?.map((value) => ({
+                        currentAttributeValues?.map((value) => ({
                             label: value.minAttributeValue,
                             value: value.attributeValueSeq,
                         })) || [];
@@ -548,7 +632,7 @@ const ProductNotificationCard = forwardRef(
                     );
                 } else if (attribute.attributeClassificationType === 'SINGLE_SELECT') {
                     const options =
-                        attributeValues[attribute.attributeSeq]?.map((value) => ({
+                        currentAttributeValues?.map((value) => ({
                             label: value.minAttributeValue,
                             value: value.attributeValueSeq,
                         })) || [];
@@ -561,7 +645,7 @@ const ProductNotificationCard = forwardRef(
                             <Select
                                 style={{ width: '100%' }}
                                 placeholder={`${attribute.attributeName} 선택`}
-                                options={options}
+                                options={[{ label: `${attribute.attributeName} 선택`, value: '' }, ...options]}
                                 value={
                                     selectedAttributes.find((attr) => attr.attributeSeq === attribute.attributeSeq)
                                         ?.attributeValueSeq
@@ -575,7 +659,9 @@ const ProductNotificationCard = forwardRef(
                                         const newAttribute = {
                                             attributeSeq: attribute.attributeSeq,
                                             attributeValueSeq: value,
+                                            attributeName: attribute.attributeName,
                                             minAttributeValue: options.find((option) => option.value === value)?.label,
+                                            unit: '',
                                         };
 
                                         return [
@@ -594,12 +680,50 @@ const ProductNotificationCard = forwardRef(
                             <p className="data-title">
                                 {index + 1}.{attribute.attributeName}
                             </p>
+                            <Select
+                                style={{ width: '200px', marginRight: '10px' }}
+                                placeholder="범위 선택"
+                                options={[
+                                    { label: '범위 선택', value: '' },
+                                    ...generateRangeOptions(attribute.attributeSeq),
+                                ]}
+                                value={
+                                    selectedAttributes.find((attr) => attr.attributeSeq === attribute.attributeSeq)
+                                        ?.attributeValueSeq
+                                }
+                                onChange={(value) => {
+                                    setSelectedAttributes((prev) => {
+                                        const existingAttr = prev.find(
+                                            (attr) => attr.attributeSeq === attribute.attributeSeq
+                                        );
+                                        if (!existingAttr) {
+                                            return [
+                                                ...prev,
+                                                {
+                                                    attributeSeq: attribute.attributeSeq,
+                                                    attributeName: attribute.attributeName,
+                                                    attributeValueSeq: value,
+                                                    minAttributeValue: '',
+                                                    unit: '',
+                                                },
+                                            ];
+                                        }
+                                        return prev.map((attr) =>
+                                            attr.attributeSeq === attribute.attributeSeq
+                                                ? {
+                                                      ...attr,
+                                                      attributeValueSeq: value,
+                                                  }
+                                                : attr
+                                        );
+                                    });
+                                }}
+                            />
                             <InputNumber
                                 style={{ width: '200px', marginRight: '10px' }}
                                 value={
-                                    selectedAttributes
-                                        .find((attr) => attr.attributeSeq === attribute.attributeSeq)
-                                        ?.attributeValueSeq?.split(/[^0-9.]/)[0] // 숫자만 추출
+                                    selectedAttributes.find((attr) => attr.attributeSeq === attribute.attributeSeq)
+                                        ?.minAttributeValue
                                 }
                                 onChange={(inputValue) => {
                                     setSelectedAttributes((prev) => {
@@ -610,12 +734,12 @@ const ProductNotificationCard = forwardRef(
                                             return prev.filter((attr) => attr.attributeSeq !== attribute.attributeSeq);
                                         }
 
-                                        const combinedValue = `${inputValue}${existingAttr?.unit || ''}`;
                                         const newAttribute = {
                                             attributeSeq: attribute.attributeSeq,
                                             attributeName: attribute.attributeName,
-                                            attributeValueSeq: combinedValue,
-                                            minAttributeValue: combinedValue,
+                                            attributeValueSeq: existingAttr?.attributeValueSeq || '',
+                                            minAttributeValue: inputValue,
+                                            unit: existingAttr?.unit || '',
                                         };
 
                                         return existingAttr
@@ -630,13 +754,13 @@ const ProductNotificationCard = forwardRef(
                                 style={{ width: '200px' }}
                                 placeholder={`단위 선택`}
                                 showSearch
-                                filterOption={(input, option) =>
-                                    option?.label?.toLowerCase().includes(input.toLowerCase())
-                                }
                                 options={naverUnitList}
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
                                 value={
                                     selectedAttributes.find((attr) => attr.attributeSeq === attribute.attributeSeq)
-                                        ?.unit || ''
+                                        ?.unit
                                 }
                                 onChange={(unitValue, option) => {
                                     setSelectedAttributes((prev) => {
@@ -644,17 +768,14 @@ const ProductNotificationCard = forwardRef(
                                             (attr) => attr.attributeSeq === attribute.attributeSeq
                                         );
 
-                                        const numericValue = existingAttr?.attributeValueSeq?.split(/[^0-9.]/)[0] || '';
-                                        const combinedValue = `${numericValue}${option.label}`;
-
                                         if (!existingAttr) {
                                             return [
                                                 ...prev,
                                                 {
                                                     attributeSeq: attribute.attributeSeq,
                                                     attributeName: attribute.attributeName,
-                                                    attributeValueSeq: combinedValue,
-                                                    minAttributeValue: combinedValue,
+                                                    attributeValueSeq: '',
+                                                    minAttributeValue: '',
                                                     unit: unitValue,
                                                 },
                                             ];
@@ -665,8 +786,6 @@ const ProductNotificationCard = forwardRef(
                                                 ? {
                                                       ...attr,
                                                       unit: unitValue,
-                                                      attributeValueSeq: combinedValue,
-                                                      minAttributeValue: combinedValue,
                                                   }
                                                 : attr
                                         );
@@ -678,6 +797,17 @@ const ProductNotificationCard = forwardRef(
                 }
                 return null;
             });
+        };
+
+        const generateRangeOptions = (attributeSeq) => {
+            const options = attributeValues[attributeSeq] || [];
+            const unit = naverUnitList.find((item) => item.value === options[0].maxAttributeValueUnitCode);
+            return options.map((value) => ({
+                label:
+                    (value.minAttributeValue ? value.minAttributeValue + ' ' + unit.label : '') +
+                    (value.maxAttributeValue ? ' ~ ' + value.maxAttributeValue + ' ' + unit.label : ''), // 원하는 label 구성
+                value: value.attributeValueSeq, // 원하는 value 구성
+            }));
         };
 
         const renderNaverCategory = (naverCategory, onChangeCallback) => {
@@ -693,7 +823,8 @@ const ProductNotificationCard = forwardRef(
                     <Select
                         style={{ width: '100%' }}
                         placeholder="네이버 인증 정보 선택"
-                        options={selectOptions}
+                        options={[{ label: '네이버 인증 정보 선택', value: '' }, ...selectOptions]}
+                        value={certificationList[0]?.certInfo || ''}
                         onChange={(value) => {
                             const selectedOption = selectOptions.find((option) => option.value === value);
                             onChangeCallback(value, selectedOption?.label);
@@ -739,11 +870,6 @@ const ProductNotificationCard = forwardRef(
             );
         };
 
-        const handleNextSlide = () => {
-            carouselRef.current.next();
-            onFlip();
-        };
-
         const handlePrevSlide = () => {
             carouselRef.current.prev();
             onFlip();
@@ -755,7 +881,29 @@ const ProductNotificationCard = forwardRef(
             }
         }, [isFlipped]);
 
-        const handleSave = () => {
+        // 모든 상태값 초기화하는 함수
+        const resetAllStates = () => {
+            // 기본 상태값 초기화
+            setCertificationList([{ id: 0, certInfo: '', agency: '', number: '' }]);
+            setSelectedAttributes([]);
+            setOriginArea({});
+            setProductInfoProvidedNoticeContents([]);
+            setProductInfoProvidedNoticeType('');
+            setProductInfoProvidedNoticeTypeName('');
+            setAttributes([]);
+            setAttributeValues([]);
+            setNaverCategory([]);
+            setNaverProductForProvidedNotice([]);
+        };
+
+        // 포커스가 변경될 때 초기화
+        useEffect(() => {
+            if (isFocused) {
+                resetAllStates();
+            }
+        }, [isFocused]);
+
+        const handleSave = async () => {
             const params = {
                 wholesaleProductId: data.wholesaleProductId,
                 certificationList,
@@ -763,7 +911,22 @@ const ProductNotificationCard = forwardRef(
                 originArea,
                 productInfoProvidedNoticeContents,
             };
-            postProductAttribute(params);
+            const result = await postProductAttribute(params);
+            if (result.success) {
+                message.success('상품 속성 저장 완료');
+
+                // 저장 성공 후 상태값 초기화
+                resetAllStates();
+
+                // 첫 번째 슬라이드로 돌아가기
+                if (carouselRef.current) {
+                    carouselRef.current.goTo(0);
+                }
+                onFlip(false);
+                onSaveSuccess(data.wholesaleProductId);
+            } else {
+                message.error('상품 속성 저장 실패');
+            }
         };
 
         return (
@@ -785,9 +948,9 @@ const ProductNotificationCard = forwardRef(
                         </Button>
                     </div>,
                 ]}
+                title={`${index + 1 + offset - limit}번 상품 ${data.wpaWholesaleProductId ? '속성 적용' : '속성 미적용'}`}
             >
                 <Carousel ref={carouselRef} dots={false}>
-                    {/* 첫 번째 슬라이드: 상품 정보 */}
                     <div className="product-info-slide">
                         <div className="product-content">
                             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
@@ -875,6 +1038,40 @@ const ProductNotificationCard = forwardRef(
                                                 <p className="data-content">{data.searchWord}</p>
                                             </Col>
                                         </Row>
+                                        <Divider className="divider" />
+                                        <Row className="table-row" gutter={[4, 1]}>
+                                            <Col span={5}>
+                                                <p className="data-title">상세 페이지</p>
+                                            </Col>
+                                            <Col span={1}>
+                                                <p className="data-title">:</p>
+                                            </Col>
+                                            <Col span={18}>
+                                                <p className="data-content">
+                                                    <a
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            const screenWidth = window.screen.width;
+                                                            const screenHeight = window.screen.height;
+                                                            const windowWidth = 1200;
+                                                            const windowHeight = 800;
+                                                            const left = screenWidth - windowWidth;
+                                                            const top = 0;
+
+                                                            window.open(
+                                                                data.detailPageUrl,
+                                                                '_blank',
+                                                                `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
+                                                            );
+                                                        }}
+                                                        href={data.detailPageUrl}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        상세페이지 이동
+                                                    </a>
+                                                </p>
+                                            </Col>
+                                        </Row>
                                     </div>
                                 </div>
                             </Image.PreviewGroup>
@@ -886,14 +1083,17 @@ const ProductNotificationCard = forwardRef(
                         </div>
                     </div>
 
-                    {/* 두 번째 슬라이드: 속성 입력 */}
                     <div className="attribute-slide">
                         <div className="attribute-content">
                             <>
                                 <div className="attribute-container-title">
                                     <p className="data-title">속성 입력</p>
                                 </div>
-                                {renderAttributeField(attributes, attributeValues)}
+                                {attributes.length > 0 && Object.keys(attributeValues).length > 0 ? (
+                                    renderAttributeField(attributes, attributeValues)
+                                ) : (
+                                    <Empty />
+                                )}
                                 <Divider className="divider" />
                                 <div className="attribute-container-title">
                                     <p className="data-title">원산지 입력</p>
@@ -907,18 +1107,22 @@ const ProductNotificationCard = forwardRef(
                                                 { label: '국산', value: 'domestic' },
                                                 { label: '수입산', value: 'imported' },
                                             ]}
-                                            onChange={(value) =>
+                                            onChange={(value) => {
+                                                const defaultArea =
+                                                    value === 'domestic' ? '국내산 제품' : '중국산 제품';
                                                 setOriginArea({
                                                     ...originArea,
                                                     originNation: value,
                                                     originNationName: value === 'domestic' ? '국산' : '수입산',
-                                                })
-                                            }
+                                                    originArea: defaultArea,
+                                                });
+                                            }}
                                         />
                                     </Col>
                                     <Col span={10}>
                                         <Input
                                             placeholder="생산지 입력"
+                                            value={originArea.originArea || ''}
                                             onChange={(e) =>
                                                 setOriginArea({ ...originArea, originArea: e.target.value })
                                             }
@@ -996,7 +1200,7 @@ const ProductNotificationCard = forwardRef(
                                 <Row>
                                     <Col span={24}>
                                         <div className="attribute-input-group">
-                                            <Text type="secondary">인증 정보</Text>
+                                            <Text type="secondary">제공 정보</Text>
                                             {renderNaverProductForProvidedNotice()}
                                             <Divider className="divider" style={{ margin: '16px 0' }} />
                                             {renderProductInfoProvidedNoticeContents(productInfoProvidedNoticeContents)}
@@ -1017,4 +1221,4 @@ const ProductNotificationCard = forwardRef(
     }
 );
 
-export default ProductNotificationCard;
+export default ProductAttributeCard;

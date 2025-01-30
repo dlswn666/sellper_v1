@@ -33,7 +33,7 @@ const ProductNameCardSteps = () => {
     const onSearch = async (value = searchTerm, isLoadMore = false) => {
         if (searchLoading) return;
 
-        let limit = 100;
+        let limit = 10;
 
         setSearchLoading(true);
         try {

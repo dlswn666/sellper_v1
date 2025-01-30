@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getFinalProductData } from '../../apis/productsApi.js';
+import { getFinalProductData, putProductStage } from '../../apis/productsApi.js';
 import { registerNaverProduct, getNaverSellerAddressBook } from '../../apis/naverCommerceApi.js';
-import { Row, Col, Card, Empty, Space, Affix, Image, Button, Divider, Typography, Input } from 'antd';
+import { Row, Col, Card, Empty, Space, Affix, Image, Button, Divider, Typography, Input, message } from 'antd';
 import ProductFinalCheckCard from './ProductFinalCheckCard.js';
 import Search from 'antd/es/input/Search.js';
+import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 
 const { Text } = Typography;
 
@@ -14,8 +15,6 @@ const ProductFinalCheckCardSteps = () => {
     const [searchLoading, setSearchLoading] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(100);
     const [productFocusedIndex, setProductFocusedIndex] = useState(0);
     const [prevIndex, setPrevIndex] = useState(0);
     const [thumbnailUrl, setThumbnailUrl] = useState([]);
@@ -29,13 +28,21 @@ const ProductFinalCheckCardSteps = () => {
     const [platformProductDeliveryInfo, setPlatformProductDeliveryInfo] = useState({});
     const [platformProductAttribute, setPlatformProductAttribute] = useState({});
     const productCardRefs = useRef([]);
+    const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
 
     useEffect(() => {
         onSearch();
     }, []);
 
     useEffect(() => {
-        if (finalProductData.length > 0) {
+        if (page > 1 && !searchLoading) {
+            onSearch('', searchTerm, true);
+            console.log(page);
+        }
+    }, [page]);
+
+    useEffect(() => {
+        if (finalProductData.length > 0 && page === 1) {
             initialFocusProductCard();
         }
     }, [finalProductData]);
@@ -47,13 +54,22 @@ const ProductFinalCheckCardSteps = () => {
         }, 100);
     };
 
-    const onSearch = async (productId = '', value = searchTerm, isLoadMore = false) => {
+    const handleSearch = (value) => {
+        setSearchTerm(value);
+        setHasMore(true);
+        setFinalProductData([]);
+        onSearch('', value, true, 1);
+        setPage(1);
+    };
+
+    const onSearch = async (productId = '', value = searchTerm, isLoadMore = false, currentPage = page) => {
         if (searchLoading) return;
         setSearchLoading(true);
+        let limit = 10;
         try {
             const response = await getFinalProductData({
-                limit,
-                page: hasMore ? page : 1,
+                limit: limit,
+                page: currentPage,
                 productId,
                 searchTerm: value,
             });
@@ -64,12 +80,13 @@ const ProductFinalCheckCardSteps = () => {
             } else {
                 setFinalProductData((prev) => [...prev, ...result]);
             }
-            setHasMore(result.length >= 100);
+            setHasMore(result.length >= limit);
         } catch (error) {
             console.error('Error fetching final product data:', error);
             setHasMore(false);
         } finally {
             setSearchLoading(false);
+            setLoading(false);
         }
     };
 
@@ -102,12 +119,18 @@ const ProductFinalCheckCardSteps = () => {
     };
 
     const onFocusProductCard = (index) => {
-        if (index === prevIndex && thumbnailUrl.length > 0) return;
+        if (index === prevIndex) return;
 
         setPrevIndex(index);
         setProductFocusedIndex(index);
         setDetailProduct(finalProductData[index]);
         setTitleProductName(finalProductData[index]?.productName);
+
+        console.log('finalProductData****************************', finalProductData[index]);
+
+        const thumbnailUrl =
+            finalProductData[index]?.productThumbnail?.map((item) => REACT_APP_BASE_URL + item.imgPath) || [];
+        setThumbnailUrl(thumbnailUrl);
 
         const productCat = finalProductData[index]?.productCategory || {};
         const formattedCategories = {
@@ -143,6 +166,7 @@ const ProductFinalCheckCardSteps = () => {
         });
 
         const platformProductAttribute = finalProductData[index]?.platformProductAttribute || {};
+        console.log('platformProductAttribute****************************', platformProductAttribute);
 
         setPlatformProductAttribute({
             naver: platformProductAttribute.naver || [],
@@ -168,6 +192,24 @@ const ProductFinalCheckCardSteps = () => {
 
     const onRegisterNaverProduct = async () => {
         const response = await registerNaverProduct(detailProduct);
+        // 상품 등록 후 성공 시 메시지
+        if (response.message === 'success') {
+            message.success('상품 등록 완료');
+            // 등록 후 상품 업데이트 로직 추가
+            const param = {
+                productId: detailProduct.productId,
+                stage: 'up',
+            };
+            const updateResponse = await putProductStage(param);
+            if (updateResponse.message === 'success') {
+                //update 후 상품 상태 업데이트 로직 추가
+                message.success('상품 상태 업데이트 완료');
+            } else {
+                message.error('상품 상태 업데이트 실패');
+            }
+        } else {
+            message.error('상품 등록 실패');
+        }
     };
 
     return (
@@ -179,7 +221,7 @@ const ProductFinalCheckCardSteps = () => {
                         enterButton="Search"
                         size="large"
                         loading={searchLoading}
-                        onSearch={onSearch}
+                        onSearch={(value) => handleSearch(value)}
                     />
                 </Col>
             </Row>
@@ -192,6 +234,7 @@ const ProductFinalCheckCardSteps = () => {
                                     <ProductFinalCheckCard
                                         key={item.productId}
                                         data={item}
+                                        index={index}
                                         isFocused={productFocusedIndex === index}
                                         onCardFocus={() => onFocusProductCard(index)}
                                         ref={(el) => (productCardRefs.current[index] = el)}
@@ -216,7 +259,7 @@ const ProductFinalCheckCardSteps = () => {
                                             <div className="data-title">썸네일</div>
                                             <div className="data-content">
                                                 {thumbnailUrl.length > 0 ? (
-                                                    thumbnailUrl.map((item) => (
+                                                    thumbnailUrl.map((item, index) => (
                                                         <div
                                                             style={{
                                                                 margin: '10px',
@@ -224,7 +267,7 @@ const ProductFinalCheckCardSteps = () => {
                                                                 alignItems: 'center',
                                                                 flexDirection: 'column',
                                                             }}
-                                                            key={item}
+                                                            key={`thumbnail-${index}-${item.substring(item.lastIndexOf('/') + 1)}`}
                                                         >
                                                             <Image
                                                                 width={150}
@@ -232,9 +275,9 @@ const ProductFinalCheckCardSteps = () => {
                                                                 alt="Product Image"
                                                                 onError={(e) => {
                                                                     console.error('Image load error for:', item);
-                                                                    e.target.src = '/default-image.png'; // 기본 이미지 경로 설정
+                                                                    e.target.src = '/default-image.png';
                                                                 }}
-                                                                fallback="/default-image.png" // Antd Image 컴포넌트의 기본 fallback 이미지
+                                                                fallback="/default-image.png"
                                                             />
                                                             <Button
                                                                 type="primary"
@@ -414,7 +457,10 @@ const ProductFinalCheckCardSteps = () => {
                                             {platformProductOption?.all && platformProductOption?.all.length > 0 && (
                                                 <Card title="전체" style={{ marginTop: '16px' }}>
                                                     {platformProductOption?.all?.map((item, index) => (
-                                                        <Row key={`all-${item.optionName}-${index}`} gutter={[16, 16]}>
+                                                        <Row
+                                                            key={`all-option-${index}-${item.optionName}`}
+                                                            gutter={[16, 16]}
+                                                        >
                                                             <Col span={8}>
                                                                 <div className="data-input-container">
                                                                     <Text type="secondary">옵션 이름</Text>
@@ -442,7 +488,7 @@ const ProductFinalCheckCardSteps = () => {
                                                     <Card title="네이버" style={{ marginTop: '16px' }}>
                                                         {platformProductOption?.naver?.map((item, index) => (
                                                             <Row
-                                                                key={`naver-${item.optionName}-${index}`}
+                                                                key={`naver-option-${index}-${item.optionName}`}
                                                                 gutter={[16, 16]}
                                                             >
                                                                 <Col span={8}>
@@ -472,7 +518,7 @@ const ProductFinalCheckCardSteps = () => {
                                                     <Card title="쿠팡" style={{ marginTop: '16px' }}>
                                                         {platformProductOption?.coupang?.map((item, index) => (
                                                             <Row
-                                                                key={`coupang-${item.optionName}-${index}`}
+                                                                key={`coupang-option-${index}-${item.optionName}`}
                                                                 gutter={[16, 16]}
                                                             >
                                                                 <Col span={8}>
@@ -502,7 +548,7 @@ const ProductFinalCheckCardSteps = () => {
                                                     <Card title="11번가" style={{ marginTop: '16px' }}>
                                                         {platformProductOption?.elevenst?.map((item, index) => (
                                                             <Row
-                                                                key={`elevenst-${item.optionName}-${index}`}
+                                                                key={`elevenst-option-${index}-${item.optionName}`}
                                                                 gutter={[16, 16]}
                                                             >
                                                                 <Col span={8}>
@@ -532,7 +578,7 @@ const ProductFinalCheckCardSteps = () => {
                                                     <Card title="G마켓" style={{ marginTop: '16px' }}>
                                                         {platformProductOption?.gmarket?.map((item, index) => (
                                                             <Row
-                                                                key={`gmarket-${item.optionName}-${index}`}
+                                                                key={`gmarket-option-${index}-${item.optionName}`}
                                                                 gutter={[16, 16]}
                                                             >
                                                                 <Col span={8}>

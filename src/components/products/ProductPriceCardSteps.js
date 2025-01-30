@@ -20,6 +20,7 @@ import ProductPriceCard from './ProductPriceCard.js';
 import { getProductPriceData, getProductById, getPlatformPriceById, putPlatformPrice } from '../../apis/productsApi.js';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
 import '../../css/productNameCard.css';
+import { debounce } from 'lodash';
 
 const { Text } = Typography;
 
@@ -43,6 +44,8 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
     const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
     const productPriceCardRefs = useRef([]);
     const salePriceInputRef = useRef(null);
+    const [reSearchData, setReSearchData] = useState(false);
+    const [failedPage, setFailedPage] = useState(1);
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
@@ -55,14 +58,15 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
     }, []);
 
     useEffect(() => {
-        if (searchData?.length > 0) {
+        if (searchData?.length > 0 && productPriceFocusedIndex === null) {
             initializeFirstCard();
         }
     }, [searchData]);
 
     useEffect(() => {
         if (page > 1 && !searchLoading) {
-            onSearch(searchTerm, true);
+            onSearch('', searchTerm, true);
+            console.log('page', page);
         }
     }, [page]);
 
@@ -84,31 +88,62 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
     const onSearch = async (productId = '', search = searchTerm, isLoadMore = false) => {
         if (searchLoading) return;
         setSearchLoading(true);
+        let limit = 10;
+
+        const currentPage = isLoadMore ? page : reSearchData ? failedPage : 1;
 
         try {
-            const result = await getProductPriceData(productId, search, isLoadMore ? page : 1, 100);
+            const result = await getProductPriceData(productId, search, currentPage, limit);
 
             // 조회 후 개별 가격 조회
             for (const item of result) {
                 const platformPrices = await fetchPlatformPrices(item.workingProductId);
                 item.platformPrices = platformPrices;
             }
+            console.log('result', result);
+            const totalCount = result[0].total_count;
 
-            if (!isLoadMore) {
+            if (!isLoadMore && !reSearchData) {
                 setSearchData(result);
                 setProductPriceFocusedIndex(0);
             } else {
                 setSearchData((prev) => [...prev, ...result]);
             }
 
-            setHasMore(result.length >= 100);
+            const currentTotal = isLoadMore ? searchData.length + result.length : result.length;
+            setHasMore(currentTotal < totalCount);
+            setReSearchData(false);
+            setFailedPage(1);
         } catch (error) {
             console.error('Error fetching data:', error);
             setHasMore(false);
+            setReSearchData(true);
+            setFailedPage(currentPage);
         } finally {
             setLoading(false);
             setSearchLoading(false);
         }
+    };
+
+    const renderReSearchData = () => {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '20px',
+                    background: '#f5f5f5',
+                    borderRadius: '8px',
+                    marginTop: '16px',
+                }}
+            >
+                <p>페이지 {failedPage}에서 데이터 로딩에 실패했습니다.</p>
+                <Button type="primary" onClick={() => onSearch()} loading={searchLoading}>
+                    실패한 페이지부터 다시 불러오기
+                </Button>
+            </div>
+        );
     };
 
     const fetchPlatformPrices = async (productId) => {
@@ -116,18 +151,12 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
             const result = await getPlatformPriceById(productId);
             result.forEach((price) => {
                 // 판매가를 100원 단위로 올림 처리
-                price.salePrice = Math.ceil(price.salePrice / 100) * 100 + price.discountPrice;
+                price.finalPrice = price.salePrice - price.discountPrice;
                 price.discountPercent = Math.round((price.discountPrice / price.salePrice) * 100);
-                price.taxPercent = Math.round(price.taxPercent * 100);
+
                 price.marginPercent = Math.round(price.marginPercent * 100);
                 price.platformPercent = Math.round(price.platformPercent * 100);
-                price.marginPrice =
-                    price.salePrice -
-                    price.discountPrice -
-                    price.taxPrice -
-                    price.platformPrice -
-                    Number(price.wholesaleProductPrice);
-                price.finalPrice = price.salePrice - price.discountPrice;
+                price.taxPercent = Math.round(price.taxPercent * 100);
                 price.finalProfitPrice =
                     price.salePrice -
                     price.discountPrice -
@@ -137,10 +166,10 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                 price.requiredDailySales =
                     dailyProfitTarget > 0 ? Math.ceil(dailyProfitTarget / price.finalProfitPrice) : 0;
                 if (price.platformId === 'naver' && price.naverProductPoint) {
-                    price.reviewPointText = price.naverProductPoint.reviewPointText;
-                    price.reviewPointPhoto = price.naverProductPoint.reviewPointPhoto;
-                    price.reviewPointTextMonth = price.naverProductPoint.reviewPointTextMonth;
-                    price.reviewPointPhotoMonth = price.naverProductPoint.reviewPointPhotoMonth;
+                    price.reviewPointText = price.naverProductPoint[0].reviewPointText || 10;
+                    price.reviewPointPhoto = price.naverProductPoint[0].reviewPointPhoto || 50;
+                    price.reviewPointTextMonth = price.naverProductPoint[0].reviewPointTextMonth || 10;
+                    price.reviewPointPhotoMonth = price.naverProductPoint[0].reviewPointPhotoMonth || 50;
                 }
             });
             return result;
@@ -171,6 +200,51 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
         }
     };
 
+    const debouncedCalculate = useRef(
+        debounce((price, field, value, callback) => {
+            // 판매가를 100원 단위로 올림 처리
+            if (field === 'salePrice') {
+                price.salePrice = Math.ceil(value / 100) * 100;
+            }
+
+            // 1. 할인가 계산
+            if (field === 'discountPercent') {
+                price.discountPrice = Math.ceil(price.salePrice * (value / 100));
+            } else if (field === 'discountPrice') {
+                price.discountPercent = Math.round((value / price.salePrice) * 100);
+            } else {
+                price.discountPrice = Math.ceil(price.salePrice * (price.discountPercent / 100));
+                price.discountPercent = Math.round((price.discountPrice / price.salePrice) * 100);
+            }
+
+            // 2. 최종 판매금액 계산
+            price.finalPrice = price.salePrice - price.discountPrice;
+            setFinalPlatformPrices(price.finalPrice);
+
+            // 3. 세금액 계산
+            price.taxPrice = Math.ceil(price.finalPrice * (price.taxPercent / 100));
+
+            // 4. 플랫폼 수수료액 계산
+            price.platformPrice = Math.ceil(price.finalPrice * (price.platformPercent / 100));
+
+            // 5. 마진액 계산
+            price.marginPrice =
+                price.finalPrice - price.taxPrice - price.platformPrice - Number(price.wholesaleProductPrice);
+
+            // 6. 순이익 계산
+            price.finalProfitPrice = Math.round(price.marginPrice);
+
+            // 7. 마진율 계산
+            price.marginPercent = Math.round((price.marginPrice / price.finalPrice) * 100);
+
+            // 8. 목표 달성을 위한 일일 필요 판매량 계산
+            price.requiredDailySales =
+                dailyProfitTarget > 0 ? Math.ceil(dailyProfitTarget / price.finalProfitPrice) : 0;
+
+            callback(price);
+        }, 1000)
+    ).current;
+
     const handlePriceChange = (index, field, value) => {
         let newPlatformPrices = [...platformPrices];
         newPlatformPrices[index] = {
@@ -178,81 +252,40 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
             [field]: value,
         };
 
-        // 모든 필드 변경시 전체 가격 재계산
-        const price = newPlatformPrices[index];
-
-        // 자신 필드는 계산하지 않는다
-
-        // 판매가를 100원 단위로 올림 처리
-        if (field === 'salePrice') {
-            price.salePrice = Math.ceil(price.salePrice / 100) * 100;
-        }
-
-        // 1. 할인가 계산
-        if (field !== 'discountPrice') {
-            price.discountPrice = Math.ceil(price.salePrice * (price.discountPercent / 100));
-        }
-
-        // 할인율 계산
-        if (field !== 'discountPercent') {
-            price.discountPercent = Math.round((price.discountPrice / price.salePrice) * 100);
-        }
-
-        // 2. 최종 판매금액 계산
-        if (field !== 'finalPrice') {
-            price.finalPrice = price.salePrice - price.discountPrice;
-            setFinalPlatformPrices(price.finalPrice);
-        }
-
-        // 3. 세금액 계산
-        if (field !== 'taxPrice') {
-            price.taxPrice = Math.ceil(price.finalPrice * (price.taxPercent / 100));
-        }
-
-        // 4. 플랫폼 수수료액 계산
-        if (field !== 'platformPrice') {
-            price.platformPrice = Math.ceil(price.finalPrice * (price.platformPercent / 100));
-        }
-
-        // 5. 마진액 계산
-        if (field !== 'marginPrice') {
-            price.marginPrice =
-                price.finalPrice - price.taxPrice - price.platformPrice - Number(price.wholesaleProductPrice);
-        }
-
-        // 6. 순이익 계산
-        if (field !== 'finalProfitPrice') {
-            price.finalProfitPrice = Math.round(price.marginPrice);
-        }
-
-        // 7. 마진율 계산
-        if (field !== 'marginPercent') {
-            price.marginPercent = Math.round((price.marginPrice / price.finalPrice) * 100);
-        }
-
-        // 8. 목표 달성을 위한 일일 필요 판매량 계산
-        if (field !== 'requiredDailySales') {
-            price.requiredDailySales =
-                dailyProfitTarget > 0 ? Math.ceil(dailyProfitTarget / price.finalProfitPrice) : 0;
-        }
-
-        if (price.salePrice === 0) {
-            price.discountPrice = 0;
-            price.discountPercent = 0;
-            price.finalPrice = 0;
-            price.taxPrice = 0;
-            price.platformPrice = 0;
-            price.marginPrice = 0;
-            price.finalProfitPrice = 0;
-            price.marginPercent = 0;
-            price.requiredDailySales = 0;
+        // 판매가가 0일 경우 즉시 모든 값 초기화
+        if (value === 0 && field === 'salePrice') {
+            newPlatformPrices[index] = {
+                ...newPlatformPrices[index],
+                discountPrice: 0,
+                discountPercent: 0,
+                finalPrice: 0,
+                taxPrice: 0,
+                platformPrice: 0,
+                marginPrice: 0,
+                finalProfitPrice: 0,
+                marginPercent: 0,
+                requiredDailySales: 0,
+            };
             setPlatformPrices(newPlatformPrices);
             return;
         }
 
-        // searchData 업데이트를 별도의 useEffect로 처리
+        // debounce된 계산 실행
+        debouncedCalculate(newPlatformPrices[index], field, value, (calculatedPrice) => {
+            newPlatformPrices[index] = calculatedPrice;
+            setPlatformPrices([...newPlatformPrices]);
+        });
+
+        // 즉시 입력값 반영
         setPlatformPrices(newPlatformPrices);
     };
+
+    // 컴포넌트 언마운트 시 debounce 취소
+    useEffect(() => {
+        return () => {
+            debouncedCalculate.cancel();
+        };
+    }, []);
 
     const handleSave = async () => {
         if (prevIndex === null || !productPriceCardRefs.current[prevIndex]) return;
@@ -277,46 +310,21 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
             if (result && result.message === 'success') {
                 message.success('가격 정보가 성공적으로 저장되었습니다.');
 
-                // 업데이트된 상품 정보 조회
-                const updateProduct = await getProductPriceData(
-                    searchData[productPriceFocusedIndex].productId,
-                    '',
-                    1,
-                    1
-                );
+                // 현재 선택된 상품의 플랫폼 가격 정보만 업데이트
+                const platformPrices = await fetchPlatformPrices(searchData[productPriceFocusedIndex].workingProductId);
 
-                if (updateProduct && updateProduct.length > 0) {
-                    const newSearchData = [...searchData];
-                    const platformPrices = await fetchPlatformPrices(
-                        searchData[productPriceFocusedIndex].workingProductId
-                    );
+                // 현재 searchData 배열 복사
+                const newSearchData = [...searchData];
 
-                    // 현재 인덱스 저장
-                    const currentIndex = productPriceFocusedIndex;
+                // 현재 선택된 상품의 플랫폼 가격 정보만 업데이트
+                newSearchData[productPriceFocusedIndex] = {
+                    ...newSearchData[productPriceFocusedIndex],
+                    platformPrices,
+                };
 
-                    // 업데이트된 상품을 배열 끝으로 이동
-                    const [movedItem] = newSearchData.splice(currentIndex, 1);
-                    movedItem.platformPrices = platformPrices;
-                    newSearchData.push(movedItem);
-
-                    setSearchData(newSearchData);
-
-                    // 다음 포커스 인덱스 계산
-                    // 현재 인덱스가 마지막 항목이었다면, 새로운 첫 번째 항목으로 이동
-                    const nextIndex = currentIndex >= newSearchData.length - 1 ? 0 : currentIndex;
-
-                    // 다음 상품에 포커스 설정
-                    setTimeout(() => {
-                        setProductPriceFocusedIndex(nextIndex);
-                        if (productPriceCardRefs.current[nextIndex]) {
-                            productPriceCardRefs.current[nextIndex].focusInput();
-                            const nextPlatformPrices = newSearchData[nextIndex].platformPrices;
-                            if (nextPlatformPrices && nextPlatformPrices.length > 0) {
-                                setPlatformPrices([nextPlatformPrices[0]]);
-                            }
-                        }
-                    }, 100);
-                }
+                // 상태 업데이트
+                setSearchData(newSearchData);
+                setPlatformPrices(platformPrices);
             } else {
                 message.error('가격 정보 저장에 실패했습니다.');
             }
@@ -330,33 +338,6 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
     const formatKRW = (number) => {
         return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
-
-    // 추후 플랫폼별 탭 추가
-    // const renderPlatformPriceTab = () => {
-    //     const platforms = [
-    //         { key: 'naver', label: '네이버', dataKey: 'naver_recoCate' },
-    //         { key: 'gmarket', label: 'G마켓', dataKey: 'B_recoCate' },
-    //         { key: 'C', label: 'C몰', dataKey: 'C_recoCate' },
-    //     ];
-
-    //     const items = platforms.map((platform) => ({
-    //         key: platform.key,
-    //         label: platform.label,
-    //         children: renderPlatformPriceCard(platform.key, platform),
-    //     }));
-
-    //     return <Tabs items={items} />;
-    // };
-
-    // const renderPlatformPriceCard = (platformId, platform) => {
-    //     return (
-    //         <Row>
-    //             <Col span={24}>
-    //                 <div>test</div>
-    //             </Col>
-    //         </Row>
-    //     );
-    // };
 
     return (
         <div style={{ padding: '24px' }}>
@@ -390,6 +371,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                 <Empty description="검색 결과가 없습니다" />
                             )}
                         </Space>
+                        {reSearchData && renderReSearchData()}
                     </Card>
                 </Col>
                 <Col span={12}>
@@ -742,11 +724,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialPrice, platfor
                                                                 <div className="price-input-group">
                                                                     <Text type="secondary">텍스트 리뷰 작성</Text>
                                                                     <InputNumber
-                                                                        value={
-                                                                            price.reviewPointText
-                                                                                ? price.reviewPointText
-                                                                                : 10
-                                                                        }
+                                                                        value={price.reviewPointText}
                                                                         style={{ width: '100%' }}
                                                                         onChange={(value) =>
                                                                             handlePriceChange(

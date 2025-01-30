@@ -4,7 +4,7 @@ import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const REACT_APP_BASE_URL = process.env.REACT_APP_BASE_URL;
 
-const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus }, ref) => {
+const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus, index }, ref) => {
     const cardRef = useRef(null);
     const [localData, setLocalData] = useState(data);
     const imageSrc = data.productThumbnail?.[0]?.imgPath || defaultImage;
@@ -31,6 +31,7 @@ const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus }, ref)
                 width: '100%',
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
             }}
+            title={`${index + 1}번째 상품`}
         >
             <Image.PreviewGroup items={thumbNailUrl}>
                 <div style={{ display: 'flex', flex: 1 }}>

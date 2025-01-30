@@ -1,17 +1,18 @@
-import { Card, Image, Space, Row, Col, Divider } from 'antd';
+import { Card, Image, Row, Col, Divider, Button, message } from 'antd';
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import InputComponent from '../InputComponent.js';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
-import { putProductTag } from '../../apis/productsApi.js';
+import { putProductTag, postProductTag } from '../../apis/productsApi.js';
 import '../../css/ImagePreview.css';
 
-const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
+const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInfo }, ref) => {
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
     const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
     const inputRef = useRef(null);
     const [inputValue, setInputValue] = useState('');
     const [localData, setLocalData] = useState(structuredClone(data));
     const [tagCount, setTagCount] = useState(0);
+    const [tags, setTags] = useState([]);
 
     useEffect(() => {
         if (data.thumbnail && Array.isArray(data.thumbnail)) {
@@ -19,6 +20,12 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref)
             setThumbNailUrl(urls);
         }
     }, [data.thumbnail]);
+
+    useEffect(() => {
+        if (tagInfo && tagInfo.code && Array.isArray(tags) && !tags.find((tag) => tag.code === tagInfo.code)) {
+            setTags((prevTags) => [...prevTags, tagInfo]);
+        }
+    }, [tagInfo]);
 
     useEffect(() => {
         const tags = inputValue
@@ -40,6 +47,29 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref)
         },
     }));
 
+    const handleSave = async () => {
+        console.log('tags****************************', tags);
+        const result = await putProductTag({ productId: data.productId, tag: tags });
+        console.log('result****************************', result);
+        if (result.success) {
+            const tagTexts = tags.map((tag) => tag.text).join(' ');
+            const paramsData = { productId: data.productId, tag: tagTexts };
+            const result = await postProductTag(paramsData);
+            console.log('result****************************', result);
+            if (result.success) {
+                message.success('태그가 저장되었습니다.');
+            } else {
+                message.error('태그 저장에 실패했습니다.');
+            }
+        } else {
+            message.error('태그 저장에 실패했습니다.');
+        }
+    };
+
+    const handleRemoveTag = (indexToRemove) => {
+        setTags((prevTags) => prevTags.filter((_, index) => index !== indexToRemove));
+    };
+
     return (
         <Card
             hoverable
@@ -47,6 +77,13 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref)
             onFocus={onCardFocus}
             tabIndex={0}
             title={`${index}번 상품 - ${data.platformTag ? '태그 설정' : '태그 미설정'}`}
+            actions={[
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px' }}>
+                    <Button type="primary" onClick={handleSave}>
+                        태그 저장
+                    </Button>
+                </div>,
+            ]}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>
@@ -183,14 +220,29 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref)
                     }}
                 >
                     <span>태그 입력</span>
-                    <span style={{ color: tagCount > 0 ? '#1890ff' : '#999' }}>{tagCount}개의 태그 / 최대 10개</span>
+                    <span style={{ color: tags.length > 0 ? '#1890ff' : '#999' }}>
+                        {tags.length}개의 태그 / 최대 10개
+                    </span>
                 </div>
-                <InputComponent
-                    ref={inputRef}
-                    placeholder="상품 태그를 입력해주세요"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                />
+                <div
+                    className="reco-word-container"
+                    style={{ minHeight: '44px', padding: '8px', border: '1px solid #d9d9d9', borderRadius: '6px' }}
+                >
+                    {tags.map((tag, index) => (
+                        <span key={tag.code} className="reco-word">
+                            {tag.text}
+                            <span
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveTag(index);
+                                }}
+                                className="remove-icon"
+                            >
+                                ×
+                            </span>
+                        </span>
+                    ))}
+                </div>
             </div>
         </Card>
     );

@@ -110,3 +110,14 @@ export const getNaverSellerAddressBook = async () => {
         throw error;
     }
 };
+
+// 태그 조회
+export const getNaverTagInfo = async (keyword) => {
+    try {
+        const response = await apiNaverCommerce.get(`/naverCommerce/getNaverTagInfo/${keyword}`);
+        return response.data;
+    } catch (error) {
+        console.error('Naver tag info error', error);
+        throw error;
+    }
+};

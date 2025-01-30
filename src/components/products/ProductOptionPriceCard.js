@@ -47,7 +47,7 @@ const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus
                 width: '100%',
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
             }}
-            title={`${index}번 상품 - ${data.productName ? '상품명 설정' : '상품명 미설정'}`}
+            title={`${index}번 상품 ${data.pposProductId ? '옵션 적용' : '옵션 미적용'}`}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>
@@ -137,12 +137,12 @@ const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus
                                             const top = 0;
 
                                             window.open(
-                                                data.detailpageUrl,
+                                                data.detailPageUrl,
                                                 '_blank',
                                                 `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
                                             );
                                         }}
-                                        href={data.detailpageUrl}
+                                        href={data.detailPageUrl}
                                         style={{ cursor: 'pointer' }}
                                     >
                                         상세페이지 이동

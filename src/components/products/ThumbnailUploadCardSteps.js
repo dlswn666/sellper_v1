@@ -24,25 +24,27 @@ export const ThumbnailUploadCardSteps = () => {
 
     useEffect(() => {
         if (page > 1 && !searchLoading) {
-            onSearch(searchTerm, true);
+            onSearch('', searchTerm, true);
         }
     }, [page]);
 
     const onSearch = async (productId = '', search = searchTerm, isLoadMore = false) => {
         if (searchLoading) return;
         setSearchLoading(true);
-
+        let limit = 10;
         try {
-            const result = await getProductAttributeData(productId, search, isLoadMore ? page : 1, 100, 'thumbnail');
+            const result = await getProductAttributeData(productId, search, isLoadMore ? page : 1, limit, 'thumbnail');
             if (!isLoadMore) {
                 setThumbnailUpdateData(result);
                 setThumbnailUpdateFocusedIndex(0);
-                const detailImageData = await getProductDetailImage(result[0]?.wholesaleProductId);
-                setDetailImage(detailImageData);
             } else {
                 setThumbnailUpdateData((prev) => [...prev, ...result]);
             }
-            setHasMore(result.length >= 100);
+            if (result.length > 0) {
+                const detailImageData = await getProductDetailImage(result[0]?.wholesaleProductId);
+                setDetailImage(detailImageData);
+            }
+            setHasMore(result.length >= limit);
         } catch (error) {
             console.error('Error fetching attributes:', error);
             setHasMore(false);
@@ -98,6 +100,7 @@ export const ThumbnailUploadCardSteps = () => {
                                     <ThumbnailUploadCard
                                         key={item.productId}
                                         data={item}
+                                        index={index}
                                         thumbnailData={thumbnailData}
                                         isFocused={index === thumbnailUpdateFocusedIndex}
                                         onCardFocus={() => onFocusThumbnailUpdateCard(index)}

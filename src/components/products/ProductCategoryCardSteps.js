@@ -33,10 +33,10 @@ const ProductCategoryCardSteps = () => {
     }, []);
 
     useEffect(() => {
-        if (searchData?.length > 0) {
-            initializeFirstCard();
+        if (page > 1 && !searchLoading) {
+            onSearch(searchTerm, true);
         }
-    }, [searchData]);
+    }, [page]);
 
     useEffect(() => {
         if (recommendedSelectedCategory) {
@@ -70,19 +70,22 @@ const ProductCategoryCardSteps = () => {
     const onSearch = async (value = searchTerm, isLoadMore = false) => {
         if (searchLoading) return;
         setSearchLoading(true);
-
+        let limit = 10;
         try {
-            const response = await getCateProduct(value, isLoadMore ? page : 1, 100);
+            const response = await getCateProduct(value, isLoadMore ? page : 1, limit);
             const result = response || [];
 
             if (!isLoadMore) {
                 setSearchData(result);
-                setProductCategoryFocusedIndex(0);
             } else {
                 setSearchData((prev) => [...prev, ...result]);
             }
 
-            setHasMore(result.length >= 100);
+            if (page === 1) {
+                setProductCategoryFocusedIndex(0);
+            }
+
+            setHasMore(result.length >= limit);
         } catch (error) {
             console.error('Error:', error);
             setHasMore(false);
@@ -304,7 +307,7 @@ const ProductCategoryCardSteps = () => {
                         enterButton="Search"
                         size="large"
                         loading={searchLoading}
-                        onSearch={handleSearch}
+                        onSearch={(value) => handleSearch(value)}
                     />
                 </Col>
             </Row>
