@@ -31,7 +31,7 @@ const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus, index 
                 width: '100%',
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
             }}
-            title={`${index + 1}번째 상품`}
+            title={`${index + 1}번째 상품 ${data.stage === 'up' ? '상품 등록 완료' : '상품 미등록'}`}
         >
             <Image.PreviewGroup items={thumbNailUrl}>
                 <div style={{ display: 'flex', flex: 1 }}>

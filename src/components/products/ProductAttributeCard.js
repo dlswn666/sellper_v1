@@ -801,13 +801,20 @@ const ProductAttributeCard = forwardRef(
 
         const generateRangeOptions = (attributeSeq) => {
             const options = attributeValues[attributeSeq] || [];
-            const unit = naverUnitList.find((item) => item.value === options[0].maxAttributeValueUnitCode);
-            return options.map((value) => ({
-                label:
-                    (value.minAttributeValue ? value.minAttributeValue + ' ' + unit.label : '') +
-                    (value.maxAttributeValue ? ' ~ ' + value.maxAttributeValue + ' ' + unit.label : ''), // 원하는 label 구성
-                value: value.attributeValueSeq, // 원하는 value 구성
-            }));
+
+            // unit이 없는 경우를 처리
+            return options.map((value) => {
+                const unit = naverUnitList.find((item) => item.value === value.maxAttributeValueUnitCode) || {
+                    label: '',
+                };
+
+                return {
+                    label:
+                        (value.minAttributeValue ? value.minAttributeValue + ' ' + unit.label : '') +
+                        (value.maxAttributeValue ? ' ~ ' + value.maxAttributeValue + ' ' + unit.label : ''),
+                    value: value.attributeValueSeq,
+                };
+            });
         };
 
         const renderNaverCategory = (naverCategory, onChangeCallback) => {
@@ -886,7 +893,7 @@ const ProductAttributeCard = forwardRef(
             // 기본 상태값 초기화
             setCertificationList([{ id: 0, certInfo: '', agency: '', number: '' }]);
             setSelectedAttributes([]);
-            setOriginArea({});
+            setOriginArea({ originNation: '', originNationName: '', originArea: '' });
             setProductInfoProvidedNoticeContents([]);
             setProductInfoProvidedNoticeType('');
             setProductInfoProvidedNoticeTypeName('');
@@ -1103,17 +1110,28 @@ const ProductAttributeCard = forwardRef(
                                         <Select
                                             style={{ width: '100%' }}
                                             placeholder="국산/수입산 선택"
+                                            value={originArea.originNation || ''}
                                             options={[
+                                                { label: '국산/수입산 선택', value: '' },
                                                 { label: '국산', value: 'domestic' },
                                                 { label: '수입산', value: 'imported' },
                                             ]}
                                             onChange={(value) => {
                                                 const defaultArea =
-                                                    value === 'domestic' ? '국내산 제품' : '중국산 제품';
+                                                    value === 'domestic'
+                                                        ? '국내산 제품'
+                                                        : value === 'imported'
+                                                          ? '중국산 제품'
+                                                          : '';
                                                 setOriginArea({
                                                     ...originArea,
                                                     originNation: value,
-                                                    originNationName: value === 'domestic' ? '국산' : '수입산',
+                                                    originNationName:
+                                                        value === 'domestic'
+                                                            ? '국산'
+                                                            : value === 'imported'
+                                                              ? '수입산'
+                                                              : '',
                                                     originArea: defaultArea,
                                                 });
                                             }}

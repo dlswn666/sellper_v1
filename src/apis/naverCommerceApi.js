@@ -2,7 +2,7 @@ import axios from 'axios';
 const timestamp = Date.now();
 
 const apiNaverCommerce = axios.create({
-    baseURL: 'http://localhost:3001',
+    baseURL: process.env.REACT_APP_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
