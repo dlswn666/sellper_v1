@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
-import { Card, Row, Col, Image, Divider } from 'antd';
+import { Card, Row, Col, Image, Divider, Button, message } from 'antd';
+import { deleteProduct as deleteProductApi } from '../../apis/productsApi.js';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 
 const REACT_APP_BASE_URL = process.env.REACT_APP_BASE_URL;
 
-const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus, index }, ref) => {
+const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus, index, onDelete }, ref) => {
     const cardRef = useRef(null);
     const [localData, setLocalData] = useState(data);
     const imageSrc = data.productThumbnail?.[0]?.imgPath || defaultImage;
@@ -21,6 +22,27 @@ const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus, index 
         }
     }, [isFocused]);
 
+    const handleDeleteProduct = async () => {
+        try {
+            console.log('data.productId', data.productId);
+            const result = await deleteProductApi({
+                productId: data.productId,
+            });
+
+            if (result.success) {
+                message.success('상품이 성공적으로 삭제되었습니다.');
+                if (typeof onDelete === 'function') {
+                    onDelete(data.productId);
+                }
+            } else {
+                message.error('상품 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('상품 삭제 중 오류 발생:', error);
+            message.error('상품 삭제 중 오류가 발생했습니다.');
+        }
+    };
+
     return (
         <Card
             hoverable
@@ -32,6 +54,13 @@ const ProductFinalCheckCard = forwardRef(({ data, isFocused, onCardFocus, index 
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
             }}
             title={`${index + 1}번째 상품 ${data.stage === 'up' ? '상품 등록 완료' : '상품 미등록'}`}
+            actions={[
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px' }}>
+                    <Button type="primary" danger onClick={handleDeleteProduct}>
+                        삭제
+                    </Button>
+                </div>,
+            ]}
         >
             <Image.PreviewGroup items={thumbNailUrl}>
                 <div style={{ display: 'flex', flex: 1 }}>

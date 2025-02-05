@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getFinalProductData, putProductStage } from '../../apis/productsApi.js';
 import { registerNaverProduct, getNaverSellerAddressBook } from '../../apis/naverCommerceApi.js';
-import { Row, Col, Card, Empty, Space, Affix, Image, Button, Divider, Typography, Input, message } from 'antd';
+import { Row, Col, Card, Empty, Space, Affix, Image, Button, Divider, Typography, Input, message, Modal } from 'antd';
 import ProductFinalCheckCard from './ProductFinalCheckCard.js';
 import Search from 'antd/es/input/Search.js';
 import useInfiniteScroll from '../../hooks/useInfiniteScroll.js';
+import ProductPriceCardSteps from './ProductPriceCardSteps.js';
+import ProductTagCardSteps from './ProductTagCardSteps.js';
 
 const { Text } = Typography;
 
@@ -27,6 +29,8 @@ const ProductFinalCheckCardSteps = () => {
     const [platformProductNaverPoint, setPlatformProductNaverPoint] = useState({});
     const [platformProductDeliveryInfo, setPlatformProductDeliveryInfo] = useState({});
     const [platformProductAttribute, setPlatformProductAttribute] = useState({});
+    const [isPriceModalVisible, setIsPriceModalVisible] = useState(false);
+    const [isTagModalVisible, setIsTagModalVisible] = useState(false);
     const productCardRefs = useRef([]);
     const { page, setPage, setLoading } = useInfiniteScroll(hasMore);
 
@@ -123,10 +127,20 @@ const ProductFinalCheckCardSteps = () => {
 
         setPrevIndex(index);
         setProductFocusedIndex(index);
-        setDetailProduct(finalProductData[index]);
+        const currentProduct = finalProductData[index];
+        setDetailProduct({
+            ...currentProduct,
+            workingProductId: currentProduct.productId,
+            wholeProductPrice: currentProduct.productPrice,
+            platformProductPrice: {
+                naver: [currentProduct.platformProductPrice?.naver] || [],
+                coupang: [currentProduct.platformProductPrice?.coupang] || [],
+                elevenst: [currentProduct.platformProductPrice?.elevenst] || [],
+                gmarket: [currentProduct.platformProductPrice?.gmarket] || [],
+            },
+        });
+        console.log('finalProductData[index]****************************', finalProductData[index]);
         setTitleProductName(finalProductData[index]?.productName);
-
-        console.log('finalProductData****************************', finalProductData[index]);
 
         const thumbnailUrl =
             finalProductData[index]?.productThumbnail?.map((item) => REACT_APP_BASE_URL + item.imgPath) || [];
@@ -166,7 +180,6 @@ const ProductFinalCheckCardSteps = () => {
         });
 
         const platformProductAttribute = finalProductData[index]?.platformProductAttribute || {};
-        console.log('platformProductAttribute****************************', platformProductAttribute);
 
         setPlatformProductAttribute({
             naver: platformProductAttribute.naver || [],
@@ -191,25 +204,97 @@ const ProductFinalCheckCardSteps = () => {
     };
 
     const onRegisterNaverProduct = async () => {
-        const response = await registerNaverProduct(detailProduct);
-        // 상품 등록 후 성공 시 메시지
-        if (response.message === 'success') {
-            message.success('상품 등록 완료');
-            // 등록 후 상품 업데이트 로직 추가
-            const param = {
-                productId: detailProduct.productId,
-                stage: 'up',
-            };
-            const updateResponse = await putProductStage(param);
-            if (updateResponse.message === 'success') {
-                //update 후 상품 상태 업데이트 로직 추가
-                message.success('상품 상태 업데이트 완료');
+        try {
+            const response = await registerNaverProduct(detailProduct);
+
+            // 상품 등록 후 성공 시 메시지
+            if (response.message === 'success') {
+                message.success('상품 등록 완료');
+
+                // 등록 후 상품 업데이트 로직 추가
+                const param = {
+                    productId: detailProduct.productId,
+                    stage: 'up',
+                };
+
+                try {
+                    const updateResponse = await putProductStage(param);
+                    if (updateResponse.message === 'success') {
+                        message.success('상품 상태 업데이트 완료');
+                    } else {
+                        message.error('상품 상태 업데이트 실패');
+                    }
+                } catch (updateError) {
+                    message.error('상품 상태 업데이트 중 오류 발생');
+                }
             } else {
-                message.error('상품 상태 업데이트 실패');
+                message.error('상품 등록 실패');
             }
-        } else {
-            message.error('상품 등록 실패');
+        } catch (error) {
+            message.error(error.message);
         }
+    };
+
+    const handlePriceEdit = () => {
+        setIsPriceModalVisible(true);
+    };
+
+    const handlePriceModalClose = async () => {
+        setIsPriceModalVisible(false);
+        // 현재 선택된 상품의 데이터 다시 조회
+        try {
+            const response = await getFinalProductData({
+                limit: 1,
+                page: 1,
+                productId: detailProduct.productId,
+            });
+
+            if (response && response.length > 0) {
+                // 현재 finalProductData 배열에서 해당 상품 데이터 업데이트
+                const updatedFinalProductData = [...finalProductData];
+                updatedFinalProductData[productFocusedIndex] = response[0];
+                setFinalProductData(updatedFinalProductData);
+
+                // 상세 정보도 업데이트
+                finalProductData(productFocusedIndex);
+            }
+        } catch (error) {
+            console.error('Error fetching updated product data:', error);
+            message.error('상품 정보 업데이트 실패');
+        }
+    };
+
+    // 태그 수정 버튼 핸들러
+    const handleTagEdit = () => {
+        setIsTagModalVisible(true);
+    };
+
+    // 태그 모달 닫기 핸들러
+    const handleTagSaveAndRefresh = async (productId) => {
+        try {
+            // 태그 저장 후 데이터 갱신
+            const response = await getFinalProductData({
+                limit: 1,
+                page: 1,
+                productId: detailProduct.productId,
+            });
+
+            if (response && response.length > 0) {
+                const updatedFinalProductData = [...finalProductData];
+                updatedFinalProductData[productFocusedIndex] = response[0];
+                setFinalProductData(updatedFinalProductData);
+                onFocusProductCard(productFocusedIndex);
+                handleTagModalClose();
+            }
+        } catch (error) {
+            console.error('Error updating product data:', error);
+            message.error('상품 정보 업데이트 실패');
+        }
+    };
+
+    const handleTagModalClose = async () => {
+        console.log('handleTagModalClose');
+        setIsTagModalVisible(false);
     };
 
     return (
@@ -323,11 +408,13 @@ const ProductFinalCheckCardSteps = () => {
                                                     10개)
                                                 </Text>
                                                 <Input
-                                                    value={detailProduct?.platformTag
-                                                        ?.split(' ')
-                                                        .map((tag) => (tag ? `#${tag} ` : ''))
-                                                        .join(' ')}
+                                                    value={detailProduct?.platformTag}
                                                     readOnly
+                                                    addonAfter={
+                                                        <Button type="link" onClick={handleTagEdit}>
+                                                            수정
+                                                        </Button>
+                                                    }
                                                 />
                                             </div>
                                         </Col>
@@ -370,7 +457,20 @@ const ProductFinalCheckCardSteps = () => {
                                     <Row>
                                         <Col span={24}>
                                             {platformProductPrice?.naver && (
-                                                <Card title="네이버">
+                                                <Card
+                                                    title="네이버"
+                                                    actions={[
+                                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                            <Button
+                                                                type="primary"
+                                                                style={{ width: '200px' }}
+                                                                onClick={handlePriceEdit}
+                                                            >
+                                                                수정
+                                                            </Button>
+                                                        </div>,
+                                                    ]}
+                                                >
                                                     <Row gutter={[16, 16]}>
                                                         <Col span={6}>
                                                             <div className="data-input-container">
@@ -863,6 +963,37 @@ const ProductFinalCheckCardSteps = () => {
                     </Affix>
                 </Col>
             </Row>
+            <Modal
+                title="가격 수정"
+                open={isPriceModalVisible}
+                onCancel={handlePriceModalClose}
+                footer={null}
+                width={1200}
+                destroyOnClose={true}
+            >
+                <ProductPriceCardSteps
+                    visible={isPriceModalVisible}
+                    onCancel={handlePriceModalClose}
+                    initialData={detailProduct}
+                    mode="modal"
+                />
+            </Modal>
+            <Modal
+                title="태그 수정"
+                open={isTagModalVisible}
+                onCancel={handleTagModalClose}
+                footer={null}
+                width={1200}
+                destroyOnClose={true}
+            >
+                <ProductTagCardSteps
+                    visible={isTagModalVisible}
+                    onCancel={handleTagModalClose}
+                    initialData={detailProduct}
+                    mode="modal"
+                    onParentTagSave={handleTagSaveAndRefresh}
+                />
+            </Modal>
         </div>
     );
 };

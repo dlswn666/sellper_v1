@@ -95,8 +95,16 @@ export const registerNaverProduct = async (productData) => {
         const response = await apiNaverCommerce.post('/naverCommerce/registerNaverProduct', productData);
         return response.data;
     } catch (error) {
-        console.error('Naver product register error', error);
-        throw error;
+        // 서버에서 보낸 에러 메시지가 있으면 그것을 사용
+        if (error.response?.data?.details?.message) {
+            throw new Error(error.response.data.details.message);
+        }
+        // invalidInputs 정보가 있으면 첫 번째 에러 메시지 사용
+        if (error.response?.data?.details?.invalidInputs?.[0]) {
+            throw new Error(error.response.data.details.invalidInputs[0].message);
+        }
+        // 기본 에러 메시지
+        throw new Error('상품 등록 중 오류가 발생했습니다.');
     }
 };
 

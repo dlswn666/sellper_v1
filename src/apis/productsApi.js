@@ -62,11 +62,19 @@ export const putSearchWord = async (data) => {
 };
 
 // 추천 검색어 검색
-export const getAutoReco = async (data, page = 1, limit = 50, flag) => {
+export const getAutoReco = async (search, page = 1, limit = 50, flag, offset, productId) => {
     let reqUrl = `/api/getAutoReco?page=${page}&limit=${limit}&flag=${flag}`;
-    if (data) {
-        reqUrl += `&search=${data}`;
+    if (search) {
+        reqUrl += `&search=${search}`;
     }
+    console.log('productId', productId);
+    if (productId) {
+        reqUrl += `&productId=${productId}`;
+    }
+    if (offset) {
+        reqUrl += `&savedDataOffset=${offset}`;
+    }
+
     try {
         const response = await apiProducts.get(reqUrl);
         return response.data;
@@ -141,6 +149,7 @@ export const getProductById = async (id) => {
 export const getProductPriceData = async (productId = '', search = '', page = 1, limit = 50) => {
     const offset = (page - 1) * limit;
     let url = `/api/getProductPriceData?limit=${limit}&offset=${offset}`;
+    console.log('search', search);
     if (productId) {
         url += `&productId=${productId}`;
     }
@@ -328,8 +337,6 @@ export const getFinalProductData = async (param) => {
         reqUrl += `&searchTerm=${searchTerm}`;
     }
 
-    console.log('reqUrl****************************', reqUrl);
-
     try {
         const response = await apiProducts.get(reqUrl);
         return response.data;
@@ -384,6 +391,18 @@ export const putProductTag = async (data) => {
         return response.data;
     } catch (error) {
         console.error('Error putting product tag:', error);
+        throw error;
+    }
+};
+
+// 상품 삭제
+export const deleteProduct = async (data) => {
+    let reqUrl = `/api/deleteProduct`;
+    try {
+        const response = await apiProducts.delete(reqUrl, { data });
+        return response.data;
+    } catch (error) {
+        console.error('Error deleting product:', error);
         throw error;
     }
 };

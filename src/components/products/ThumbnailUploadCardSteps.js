@@ -32,6 +32,9 @@ export const ThumbnailUploadCardSteps = () => {
         if (searchLoading) return;
         setSearchLoading(true);
         let limit = 10;
+        console.log('productId****************************', productId);
+        console.log('search****************************', search);
+        console.log('isLoadMore****************************', isLoadMore);
         try {
             const result = await getProductAttributeData(productId, search, isLoadMore ? page : 1, limit, 'thumbnail');
             if (!isLoadMore) {
@@ -87,7 +90,7 @@ export const ThumbnailUploadCardSteps = () => {
                         size="large"
                         loading={searchLoading}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        onSearch={onSearch}
+                        onSearch={(value) => onSearch('', value)}
                     />
                 </Col>
             </Row>

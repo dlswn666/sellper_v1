@@ -5,64 +5,121 @@ import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import { putProductTag, postProductTag } from '../../apis/productsApi.js';
 import '../../css/ImagePreview.css';
 
-const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInfo }, ref) => {
+const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, onTagSave, mode = 'page' }, ref) => {
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
-    const imageSrc = data.thumbnail && data.thumbnail.length > 0 ? data.thumbnail[0].thumbNailUrl : defaultImage;
-    const inputRef = useRef(null);
-    const [inputValue, setInputValue] = useState('');
     const [localData, setLocalData] = useState(structuredClone(data));
-    const [tagCount, setTagCount] = useState(0);
     const [tags, setTags] = useState([]);
+    const inputRef = useRef(null); // input ref 유지
 
+    // 초기 데이터 로드 시 태그 설정
     useEffect(() => {
-        if (data.thumbnail && Array.isArray(data.thumbnail)) {
-            const urls = data.thumbnail.map((item) => item.thumbNailUrl);
-            setThumbNailUrl(urls);
+        const safeData = data || {};
+        if (Array.isArray(safeData?.tagInfo)) {
+            // tagId와 productId를 제외한 새로운 태그 배열 생성
+            const cleanTags = safeData.tagInfo
+                .filter((tag) => tag && tag.code && tag.text)
+                .map((tag) => ({
+                    code: tag.code,
+                    text: tag.text,
+                }));
+            console.log('cleanTags', cleanTags);
+            setTags(cleanTags);
+        } else if (safeData?.tagInfo && safeData?.tagInfo.code && safeData?.tagInfo.text) {
+            // 단일 태그인 경우도 동일하게 처리
+            const cleanTag = {
+                code: safeData.tagInfo.code,
+                text: safeData.tagInfo.text,
+            };
+            console.log('cleanTag1', cleanTag);
+            setTags([cleanTag]);
         }
-    }, [data.thumbnail]);
+    }, [data]);
 
+    // 포커스 처리
     useEffect(() => {
-        if (tagInfo && tagInfo.code && Array.isArray(tags) && !tags.find((tag) => tag.code === tagInfo.code)) {
-            setTags((prevTags) => [...prevTags, tagInfo]);
+        if (isFocused && inputRef.current) {
+            inputRef.current.focus();
         }
-    }, [tagInfo]);
-
-    useEffect(() => {
-        const tags = inputValue
-            .trim()
-            .split(' ')
-            .filter((tag) => tag.length > 0);
-        setTagCount(tags.length);
-    }, [inputValue]);
+    }, [isFocused]);
 
     useImperativeHandle(ref, () => ({
         focusInput: () => {
-            if (inputRef.current) {
-                inputRef.current.focus();
+            inputRef.current?.focus();
+        },
+        addTag: (newTag) => {
+            if (!newTag || !newTag.code || !newTag.text) {
+                return;
             }
+
+            setTags((prevTags) => {
+                // 중복 체크
+                const exists = prevTags.some((tag) => tag.code === newTag.code);
+
+                if (!exists && prevTags.length < 10) {
+                    console.log('prevTags', prevTags);
+                    const newTags = [...prevTags, { code: newTag.code, text: newTag.text }];
+                    console.log('newTags', newTags);
+                    return newTags;
+                }
+                console.log('prevTags1', prevTags);
+                return prevTags;
+            });
         },
-        getInputValue: () => inputValue,
-        setInputValue: (value) => {
-            setInputValue((prevValue) => `${prevValue} ${value}`.trim());
-        },
+        getTags: () => tags,
+        clearTags: () => setTags([]),
     }));
 
+    // data가 없을 경우 기본값 설정
+    const defaultData = {
+        thumbnail: [],
+        productName: '',
+        platformTag: '',
+        // 필요한 다른 기본값들 추가
+    };
+
+    useEffect(() => {
+        console.log('tags', tags);
+    }, [tags]);
+
+    // data가 없을 경우 기본값 사용
+    const safeData = data || defaultData;
+
+    // thumbnail 안전하게 접근
+    const thumbnailUrl =
+        safeData.thumbnail && safeData.thumbnail.length > 0 ? safeData.thumbnail[0].thumbNailUrl : defaultImage;
+
+    console.log(safeData.tagInfo);
+
+    useEffect(() => {
+        if (safeData.thumbnail && Array.isArray(safeData.thumbnail)) {
+            const urls = safeData.thumbnail.map((item) => item.thumbNailUrl);
+            setThumbNailUrl(urls);
+        }
+    }, [safeData.thumbnail]);
+
+    // useEffect(() => {
+    //     console.log('safeData.tagInfo', safeData.tagInfo);
+    //     if (safeData.tagInfo && !tags.find((tag) => tag.code === safeData.tagInfo.code)) {
+    //         console.log('safeData.tagInfo11', safeData.tagInfo);
+    //         setTags((prevTags) => [...prevTags, safeData.tagInfo]);
+    //     }
+    // }, [safeData.tagInfo]);
+
     const handleSave = async () => {
-        console.log('tags****************************', tags);
-        const result = await putProductTag({ productId: data.productId, tag: tags });
-        console.log('result****************************', result);
-        if (result.success) {
-            const tagTexts = tags.map((tag) => tag.text).join(' ');
-            const paramsData = { productId: data.productId, tag: tagTexts };
-            const result = await postProductTag(paramsData);
-            console.log('result****************************', result);
+        try {
+            const result = await putProductTag({ productId: safeData.productId, tag: tags });
             if (result.success) {
                 message.success('태그가 저장되었습니다.');
+                console.log('typeof onTagSave', typeof onTagSave);
+                if (typeof onTagSave === 'function') {
+                    onTagSave(safeData.productId);
+                }
             } else {
                 message.error('태그 저장에 실패했습니다.');
             }
-        } else {
-            message.error('태그 저장에 실패했습니다.');
+        } catch (error) {
+            console.error('Error in handleSave:', error);
+            message.error('태그 저장 중 오류가 발생했습니다.');
         }
     };
 
@@ -76,7 +133,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
             style={{ border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9' }}
             onFocus={onCardFocus}
             tabIndex={0}
-            title={`${index}번 상품 - ${data.platformTag ? '태그 설정' : '태그 미설정'}`}
+            title={`${index}번 상품 - ${safeData.platformTag ? '태그 설정' : '태그 미설정'}`}
             actions={[
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px' }}>
                     <Button type="primary" onClick={handleSave}>
@@ -87,7 +144,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>
-                    <Image width={150} src={imageSrc} fallback={defaultImage} alt="Product Image" />
+                    <Image width={150} src={thumbnailUrl} fallback={defaultImage} alt="Product Image" />
                     <div style={{ marginLeft: 16, flex: 1 }}>
                         <Row className="table-row" gutter={[4, 1]}>
                             <Col span={5}>
@@ -97,7 +154,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={18}>
-                                <p className="data-content">{data.wholeProductName}</p>
+                                <p className="data-content">{safeData.wholeProductName}</p>
                             </Col>
                         </Row>
                         <Divider className="divider" />
@@ -109,7 +166,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={6}>
-                                <p className="data-content">{data.siteName}</p>
+                                <p className="data-content">{safeData.siteName}</p>
                             </Col>
                             <Col span={5}>
                                 <p className="data-title">상품 번호</p>
@@ -118,7 +175,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={6}>
-                                <p className="data-content">{data.productCode}</p>
+                                <p className="data-content">{safeData.productCode}</p>
                             </Col>
                         </Row>
                         <Divider className="divider" />
@@ -130,7 +187,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={6}>
-                                <p className="data-content">{data.wholeProductPrice}</p>
+                                <p className="data-content">{safeData.wholeProductPrice}</p>
                             </Col>
                         </Row>
                         <Divider className="divider" />
@@ -154,12 +211,12 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                             const top = 0;
 
                                             window.open(
-                                                data.detailpageUrl,
+                                                safeData.detailpageUrl,
                                                 '_blank',
                                                 `width=${windowWidth},height=${windowHeight},left=${left},top=${top}`
                                             );
                                         }}
-                                        href={data.detailpageUrl}
+                                        href={safeData.detailpageUrl}
                                         style={{ cursor: 'pointer' }}
                                     >
                                         상세페이지 이동
@@ -176,7 +233,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={18}>
-                                <p className="data-content">{data.searchWord}</p>
+                                <p className="data-content">{safeData.searchWord}</p>
                             </Col>
                         </Row>
                         <Divider className="divider" />
@@ -188,10 +245,10 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                 <p className="data-title">:</p>
                             </Col>
                             <Col span={18}>
-                                <p className="data-content">{data.productName}</p>
+                                <p className="data-content">{safeData.productName}</p>
                             </Col>
                         </Row>
-                        {data.platformTag && (
+                        {safeData.platformTag && (
                             <>
                                 <Divider className="divider" />
                                 <Row className="table-row" gutter={[4, 1]}>
@@ -202,7 +259,7 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                                         <p className="data-title">:</p>
                                     </Col>
                                     <Col span={18}>
-                                        <p className="data-content">{`#${data.platformTag.split(' ').join(' #')}`}</p>
+                                        <p className="data-content">{`#${safeData.platformTag.split(' ').join(' #')}`}</p>
                                     </Col>
                                 </Row>
                             </>
@@ -226,22 +283,49 @@ const ProductTagCard = forwardRef(({ data, index, isFocused, onCardFocus, tagInf
                 </div>
                 <div
                     className="reco-word-container"
-                    style={{ minHeight: '44px', padding: '8px', border: '1px solid #d9d9d9', borderRadius: '6px' }}
+                    style={{
+                        minHeight: '44px',
+                        padding: '8px',
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                    }}
                 >
-                    {tags.map((tag, index) => (
-                        <span key={tag.code} className="reco-word">
-                            {tag.text}
-                            <span
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRemoveTag(index);
-                                }}
-                                className="remove-icon"
-                            >
-                                ×
-                            </span>
-                        </span>
-                    ))}
+                    {tags &&
+                        tags.length > 0 &&
+                        tags
+                            .filter((tag) => tag && tag.text) // null이나 빈 태그 필터링
+                            .map((tag, index) => (
+                                <span
+                                    key={`${tag.code}_${index}`}
+                                    className="reco-word"
+                                    style={{
+                                        backgroundColor: '#f0f0f0',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                    }}
+                                >
+                                    {tag.text}
+                                    <span
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveTag(index);
+                                        }}
+                                        className="remove-icon"
+                                        style={{
+                                            cursor: 'pointer',
+                                            marginLeft: '4px',
+                                        }}
+                                    >
+                                        ×
+                                    </span>
+                                </span>
+                            ))}
                 </div>
             </div>
         </Card>
