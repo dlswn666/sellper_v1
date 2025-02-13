@@ -39,6 +39,7 @@ const ProductNameCardSteps = () => {
         try {
             const response = await getAutoReco(value, isLoadMore ? page : 1, limit, 'proName');
             const result = response;
+            console.log(result);
             if (!isLoadMore) {
                 setSearchData(result);
                 // setSearchKeywordFocusedIndex(0);
@@ -75,12 +76,14 @@ const ProductNameCardSteps = () => {
     };
 
     const onFocusProductNameCard = (index) => {
-        if (prevIndex !== null && productNameCardRefs.current[prevIndex]) {
+        if (prevIndex !== null && productNameCardRefs.current[prevIndex] && prevIndex !== index) {
             const prevValue = productNameCardRefs.current[prevIndex].getInputValue();
+
             if (prevValue) {
+                const normalizedPrevValue = prevValue.trim().replace(/\s+/g, ' ');
                 let paramData = {
                     ...searchData[prevIndex],
-                    productName: prevValue,
+                    productName: normalizedPrevValue,
                 };
                 reqPutProductName(paramData);
                 searchData[prevIndex].productName = prevValue;
@@ -106,6 +109,20 @@ const ProductNameCardSteps = () => {
     const onWordClick = (index, word) => {
         if (productNameCardRefs.current[index]) {
             productNameCardRefs.current[index].setInputValue(word); // 선택한 단어를 해당 카드의 input에 설정
+        }
+    };
+    // 상품 삭제 함수
+    const onDeleteProduct = (productId) => {
+        // 삭제된 상품을 제외한 새로운 배열 생성
+        const updatedData = searchData.filter((item) => item.productId !== productId);
+        setSearchData(updatedData);
+
+        // 삭제된 상품이 현재 포커스된 상품인 경우 포커스 조정
+        if (updatedData.length > 0) {
+            const newFocusIndex = Math.min(productNameFocusedIndex, updatedData.length - 1);
+            setProductNameFocusedIndex(newFocusIndex);
+        } else {
+            setProductNameFocusedIndex(0);
         }
     };
 
@@ -156,6 +173,7 @@ const ProductNameCardSteps = () => {
                                         isFocused={index === productNameFocusedIndex}
                                         ref={(el) => (productNameCardRefs.current[index] = el)}
                                         onCardFocus={() => onFocusProductNameCard(index)}
+                                        onDelete={() => onDeleteProduct(item.productId)}
                                     />
                                 ))
                             ) : (

@@ -297,6 +297,17 @@ const ProductFinalCheckCardSteps = () => {
         setIsTagModalVisible(false);
     };
 
+    const handleProductDelete = (deletedProductId) => {
+        // 삭제된 상품을 상태에서 제거
+        setFinalProductData((prevData) => prevData.filter((product) => product.productId !== deletedProductId));
+
+        // 삭제 후 첫 번째 상품으로 포커스 이동
+        if (finalProductData.length > 1) {
+            setProductFocusedIndex(0);
+            onFocusProductCard(0);
+        }
+    };
+
     return (
         <div style={{ padding: '24px' }}>
             <Row style={{ marginBottom: '16px' }}>
@@ -323,6 +334,7 @@ const ProductFinalCheckCardSteps = () => {
                                         isFocused={productFocusedIndex === index}
                                         onCardFocus={() => onFocusProductCard(index)}
                                         ref={(el) => (productCardRefs.current[index] = el)}
+                                        onDelete={handleProductDelete}
                                     />
                                 ))
                             ) : (

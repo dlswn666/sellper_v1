@@ -66,6 +66,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
 
     useEffect(() => {
         if (searchData?.length > 0 && !isLoadMore.current) {
+            console.log('searchData****************************', searchData);
             productPriceCardRefs.current[0]?.focusInput();
             onFocusProductPriceCard(0);
         }
@@ -96,7 +97,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
 
         try {
             const result = await getProductPriceData(productId, search, currentPage, limit);
-
+            console.log('result', result);
             // 조회 후 개별 가격 조회
             for (const item of result) {
                 const platformPrices = await fetchPlatformPrices(item.workingProductId);
@@ -150,6 +151,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
     const fetchPlatformPrices = async (productId) => {
         try {
             const result = await getPlatformPriceById(productId);
+            console.log('result', result);
             result.forEach((price) => {
                 // 판매가를 100원 단위로 올림 처리
                 price.finalPrice = price.salePrice - price.discountPrice;
@@ -166,11 +168,17 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
                     Number(price.wholesaleProductPrice);
                 price.requiredDailySales =
                     dailyProfitTarget > 0 ? Math.ceil(dailyProfitTarget / price.finalProfitPrice) : 0;
-                if (price.platformId === 'naver' && price.naverProductPoint) {
-                    price.reviewPointText = price.naverProductPoint[0].reviewPointText || 10;
-                    price.reviewPointPhoto = price.naverProductPoint[0].reviewPointPhoto || 50;
-                    price.reviewPointTextMonth = price.naverProductPoint[0].reviewPointTextMonth || 10;
-                    price.reviewPointPhotoMonth = price.naverProductPoint[0].reviewPointPhotoMonth || 50;
+                //price.naverProductPoint 존재 여부 확인
+                if (price.platformId === 'naver' && price.naverProductPoint.length > 0) {
+                    price.reviewPointText = price.naverProductPoint[0].reviewPointText;
+                    price.reviewPointPhoto = price.naverProductPoint[0].reviewPointPhoto;
+                    price.reviewPointTextMonth = price.naverProductPoint[0].reviewPointTextMonth;
+                    price.reviewPointPhotoMonth = price.naverProductPoint[0].reviewPointPhotoMonth;
+                } else {
+                    price.reviewPointText = 10;
+                    price.reviewPointPhoto = 50;
+                    price.reviewPointTextMonth = 10;
+                    price.reviewPointPhotoMonth = 50;
                 }
             });
             return result;
@@ -184,20 +192,27 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
         setPrevIndex(index);
         setProductPriceFocusedIndex(index);
 
-        const selectedPlatformPrice = searchData[index].platformPrices[0];
-        if (selectedPlatformPrice.platformId === 'naver' && selectedPlatformPrice.naverProductPoint[0]) {
-            selectedPlatformPrice.reviewPointText = selectedPlatformPrice.naverProductPoint[0].reviewPointText;
-            selectedPlatformPrice.reviewPointPhoto = selectedPlatformPrice.naverProductPoint[0].reviewPointPhoto;
-            selectedPlatformPrice.reviewPointTextMonth =
-                selectedPlatformPrice.naverProductPoint[0].reviewPointTextMonth;
-            selectedPlatformPrice.reviewPointPhotoMonth =
-                selectedPlatformPrice.naverProductPoint[0].reviewPointPhotoMonth;
-        }
-        if (selectedPlatformPrice) {
+        // searchData[index]가 존재하고 platformPrices 배열이 있는지 확인
+        if (searchData[index]?.platformPrices?.length > 0) {
+            const selectedPlatformPrice = searchData[index].platformPrices[0];
+
+            // naver 관련 데이터 처리 전에 platformId 확인
+            if (selectedPlatformPrice.platformId === 'naver' && selectedPlatformPrice.naverProductPoint?.[0]) {
+                selectedPlatformPrice.reviewPointText = selectedPlatformPrice.naverProductPoint[0].reviewPointText;
+                selectedPlatformPrice.reviewPointPhoto = selectedPlatformPrice.naverProductPoint[0].reviewPointPhoto;
+                selectedPlatformPrice.reviewPointTextMonth =
+                    selectedPlatformPrice.naverProductPoint[0].reviewPointTextMonth;
+                selectedPlatformPrice.reviewPointPhotoMonth =
+                    selectedPlatformPrice.naverProductPoint[0].reviewPointPhotoMonth;
+            }
+
             setPlatformPrices([selectedPlatformPrice]);
             setTimeout(() => {
                 salePriceInputRef.current?.focus();
             }, 100);
+        } else {
+            // platformPrices가 없는 경우 빈 배열 설정
+            setPlatformPrices([]);
         }
     };
 
@@ -289,7 +304,7 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
     }, []);
 
     const handleSave = async () => {
-        console.log('platformPrices****************************', platformPrices);
+        isLoadMore.current = true;
         if (mode === 'page' && (prevIndex === null || !productPriceCardRefs.current[prevIndex])) return;
         try {
             for (const item of platformPrices) {
@@ -327,6 +342,9 @@ const ProductPriceCardSteps = ({ visible, onClose, onSave, initialData, platform
                 // 상태 업데이트
                 setSearchData(newSearchData);
                 setPlatformPrices(platformPrices);
+                setTimeout(() => {
+                    isLoadMore.current = false;
+                }, 100);
             } else {
                 message.error('가격 정보 저장에 실패했습니다.');
             }

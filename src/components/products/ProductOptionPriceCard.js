@@ -1,9 +1,10 @@
 import React, { forwardRef, useEffect, useState, useRef } from 'react';
-import { Card, Row, Col, Divider, Image, Space } from 'antd';
+import { Card, Row, Col, Divider, Image, Button, message } from 'antd';
 import defaultImage from '../../assets/errorImage/20191012_174111.jpg';
 import '../../css/ImagePreview.css';
+import { deleteProduct as deleteProductApi } from '../../apis/productsApi.js';
 
-const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus }, ref) => {
+const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus, onDelete }, ref) => {
     const cardRef = useRef(null);
     const [localData, setLocalData] = useState(data);
     const [thumbNailUrl, setThumbNailUrl] = useState([]);
@@ -38,6 +39,23 @@ const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus
         return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
+    const handleDeleteProduct = async () => {
+        try {
+            const result = await deleteProductApi({
+                productId: data.productId,
+            });
+
+            if (result.success) {
+                message.success('상품이 성공적으로 삭제되었습니다.');
+                onDelete(data.productId);
+            } else {
+                message.error('상품 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('상품 삭제 중 오류 발생:', error);
+        }
+    };
+
     return (
         <Card
             hoverable
@@ -48,6 +66,13 @@ const ProductOptionPriceCard = forwardRef(({ data, index, isFocused, onCardFocus
                 border: isFocused ? '2px solid #1890ff' : '1px solid #d9d9d9',
             }}
             title={`${index}번 상품 ${data.pposProductId ? '옵션 적용' : '옵션 미적용'}`}
+            actions={[
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginRight: '16px' }}>
+                    <Button type="primary" danger onClick={handleDeleteProduct}>
+                        삭제
+                    </Button>
+                </div>,
+            ]}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>

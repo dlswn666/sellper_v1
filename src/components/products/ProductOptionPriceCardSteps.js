@@ -20,7 +20,7 @@ const ProductOptionPriceCardSteps = () => {
     const [optionEditData, setOptionEditData] = useState({});
     const [optionRow, setOptionRow] = useState([{ optionId: uuidv4(), optionName: '색상', optionValue: '레드' }]);
     const [optionSettings, setOptionSettings] = useState([]);
-    const [optionType, setOptionType] = useState('single');
+    const [optionType, setOptionType] = useState('combination');
 
     const { Text } = Typography;
 
@@ -51,7 +51,7 @@ const ProductOptionPriceCardSteps = () => {
         setPrevIndex(index);
         setProductOptionFocusedIndex(index);
         handleOptionData(index);
-        setOptionType('single');
+        setOptionType('combination');
         setOptionSettings([]);
     };
 
@@ -255,7 +255,7 @@ const ProductOptionPriceCardSteps = () => {
     const handleApplyOptionRow = () => {
         if (optionType === 'single') {
             // 단독 옵션 처리
-            const newOptionSettings = optionRow.flatMap((item) => {
+            const newOptionSettings = optionRow.flatMap((item, index) => {
                 // optionValue가 존재하는 경우에만 split 실행
                 const values = Array.isArray(item.optionValue)
                     ? item.optionValue
@@ -272,7 +272,7 @@ const ProductOptionPriceCardSteps = () => {
                     productsId: optionEditData?.productId,
                     platform: 'all',
                     createUser: 'sellper',
-                    updateUser: 'sellper',
+                    optionIndex: index + 1,
                 }));
             });
             setOptionSettings(newOptionSettings);
@@ -310,7 +310,7 @@ const ProductOptionPriceCardSteps = () => {
 
             const combinations = generateCombinations(optionCombinations);
 
-            const newOptionSettings = combinations.map((combo) => ({
+            const newOptionSettings = combinations.map((combo, index) => ({
                 optionId: uuidv4(),
                 optionName: combo.map((c) => c.optionName).join('/'),
                 optionValue: combo.map((c) => c.optionValue).join('/'),
@@ -320,6 +320,7 @@ const ProductOptionPriceCardSteps = () => {
                 wholesaleProductId: optionEditData?.wholesaleProductId,
                 platform: 'all',
                 createUser: 'sellper',
+                optionIndex: index + 1,
             }));
 
             setOptionSettings(newOptionSettings);
@@ -331,6 +332,17 @@ const ProductOptionPriceCardSteps = () => {
         setOptionSettings((prev) =>
             prev.map((option) => (option.optionId === optionId ? { ...option, [field]: value } : option))
         );
+    };
+
+    const onDeleteProductOption = (productOptionId) => {
+        console.log('productOptionId', productOptionId);
+        const index = productOptionData.findIndex((item) => item.productOptionId === productOptionId);
+        setProductOptionData((prev) => prev.filter((item) => item.productOptionId !== productOptionId));
+        // 삭제 후 productOptionId index로 포커스 이동
+        if (index !== -1) {
+            setProductOptionFocusedIndex(index);
+            onFocusProductOptionCard(index);
+        }
     };
 
     return (
@@ -358,6 +370,7 @@ const ProductOptionPriceCardSteps = () => {
                                         index={index + 1}
                                         isFocused={productOptionFocusedIndex === index}
                                         onCardFocus={() => onFocusProductOptionCard(index)}
+                                        onDelete={() => onDeleteProductOption(item.productOptionId)}
                                         ref={(el) => (productOptionCardRefs.current[index] = el)}
                                     />
                                 ))

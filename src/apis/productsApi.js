@@ -406,3 +406,14 @@ export const deleteProduct = async (data) => {
         throw error;
     }
 };
+
+export const processGetAutoReco = async () => {
+    const url = `/naverSearch/postAutoReco`;
+    try {
+        const response = await apiProducts.post(url);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching auto reco:', error);
+        throw error;
+    }
+};

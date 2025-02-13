@@ -48,7 +48,7 @@ const ProductPriceCard = forwardRef(({ data, index, isFocused, onCardFocus, onPr
             }}
             onClick={onCardFocus}
             tabIndex={0}
-            title={`${index}번 상품 - ${data.productPrice ? '판매가 설정' : '판매가 미설정'}`}
+            title={`${index}번 상품 - ${data.stage === 'OP' ? '판매가 설정' : '판매가 미설정'}`}
         >
             <Image.PreviewGroup items={thumbNailUrl.length > 0 ? thumbNailUrl : [defaultImage]}>
                 <div style={{ display: 'flex', flex: 1 }}>
