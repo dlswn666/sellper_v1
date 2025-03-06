@@ -832,6 +832,7 @@ const ProductAttributeCard = forwardRef(
                         placeholder="네이버 인증 정보 선택"
                         options={[{ label: '네이버 인증 정보 선택', value: '' }, ...selectOptions]}
                         value={certificationList[0]?.certInfo || ''}
+                        showSearch
                         onChange={(value) => {
                             const selectedOption = selectOptions.find((option) => option.value === value);
                             onChangeCallback(value, selectedOption?.label);

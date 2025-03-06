@@ -13,6 +13,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchKeywordUrl, setSearchKeywordUrl] = useState('');
     const [detailImage, setDetailImage] = useState('');
+    const totalCountData = useRef(0);
 
     const { page, setPage, setLoading } = useInfiniteScroll(hasMore, false);
 
@@ -34,7 +35,7 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
         try {
             const response = await selectWorkingSearchWord(value, isLoadMore ? page : 1, limit);
             const { result: wspData, total: totalCount } = response;
-
+            totalCountData.current = totalCount;
             if (!isLoadMore) {
                 setSearchData(wspData);
                 setSearchKeywordFocusedIndex(0);
@@ -100,7 +101,9 @@ const SearchKeywordCardStep = ({ searchKeywordFocusedIndex, setSearchKeywordFocu
             </Row>
             <Row gutter={16} style={{ marginTop: '16px' }}>
                 <Col span={12} className="gutter-row">
-                    <Card title={`상품수 (${searchData && searchData.length ? searchData.length : 0}개)`}>
+                    <Card
+                        title={`상품수: ${searchData && searchData.length ? searchData.length : 0}개 (총 ${totalCountData.current}개)`}
+                    >
                         <div
                             className="search-keyword-list"
                             style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}
